@@ -1,0 +1,5 @@
+front/node_modules
+front/.env
+dist
+node_modules
+.env

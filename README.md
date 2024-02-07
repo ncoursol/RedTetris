@@ -2,16 +2,12 @@
 ```
 pnpm init
 pnpm install express
-npx @vue/cli create client
-npx express-generator --no-view server
+npx @vue/cli create front
+pnpm install socket.io
+pnpm install cors
 ```
 
-Server:
-```
-pnpm install
-```
-
-Client:
+Front:
 ```
 pnpm install
 pnpm install vuex
@@ -19,12 +15,12 @@ pnpm install vuex
 
 # Run App
 
-Server:
+Back:
 ```
 pnpm start
 ```
-
-Client:
+Front:
 ```
+cd front
 pnpm run serve
 ```
