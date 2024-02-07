@@ -1,8 +1,10 @@
 # RedTetris Setup
+
+npx @vue/cli create front
+
 ```
 pnpm init
 pnpm install express
-npx @vue/cli create front
 pnpm install socket.io
 pnpm install cors
 ```
@@ -11,16 +13,16 @@ Front:
 ```
 pnpm install
 pnpm install vuex
+pnpm install vue-router
 ```
 
 # Run App
 
 Back:
 ```
-pnpm start
+pnpm back
 ```
 Front:
 ```
-cd front
-pnpm run serve
+pnpm front
 ```

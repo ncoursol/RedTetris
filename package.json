@@ -5,8 +5,9 @@
   "main": "index.js",
   "scripts": {
     "back": "node index.js",
-    "front": "cd front && npm run serve",
-    "build": "cd front && npm run build --dext ../dist"
+    "front": "cd front && pnpm run serve",
+    "build": "cd front && pnpm run build --dest ../dist",
+    "init": "pnpm install && cd front && pnpm install"
   },
   "keywords": [],
   "author": "",
