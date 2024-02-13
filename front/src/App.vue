@@ -1,5 +1,6 @@
 <template>
-  <div>
+  <div style="border: 1px solid #fb00ff">
+    <h1>App</h1>
     <router-view />
   </div>
 </template>

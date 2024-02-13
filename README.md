@@ -6,6 +6,7 @@ npx @vue/cli create front
 pnpm init
 pnpm install express
 pnpm install socket.io
+pnpm install socket.io-client
 pnpm install cors
 ```
 
@@ -25,4 +26,9 @@ pnpm back
 Front:
 ```
 pnpm front
+```
+
+Build:
+```
+pnpm build
 ```
