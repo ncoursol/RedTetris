@@ -14,9 +14,6 @@ export default defineComponent({
   name: "MainLayout",
   setup() {
     const router = useRouter();
-    /* const goToGame = () => {
-      router.push("/game");
-    }; */
     const goToHome = () => {
       router.push("/");
     };

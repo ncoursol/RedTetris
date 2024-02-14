@@ -45,7 +45,7 @@ export default defineComponent({
     }
 
     const goToRoom = () => {
-      const gameRoute = `/#${roomName.value}[${socket.id}]`;
+      const gameRoute = `${roomName.value}[${socket.id}]`;
       router.push(gameRoute);
     };
 
