@@ -1,7 +1,7 @@
 <template>
   <div style="border: 1px solid #664078">
     <h1>Home</h1>
-    <button @click="createOrJoinRoom">Create a new game</button>
+    <button @click="createRoom">Create a new game</button>
     <input type="text" v-model="inputValue" />
     <h2>Rooms Information :</h2>
     <div v-if="roomsInfo.length">
@@ -32,14 +32,14 @@ export default defineComponent({
     const router = useRouter();
     const roomName = ref('');
 
-    socket.on("rooms_info", function (info) {
+    socket.on("rooms-info", function (info) {
       roomsInfo.value = info;
       console.log("Received updated rooms info:", info);
     });
 
-    function createOrJoinRoom() {
+    function createRoom() {
       if (roomName.value !== "") {
-        socket.emit("join_or_create_room", roomName.value);
+        socket.emit("join-room", roomName.value);
         goToRoom();
       }
     }
@@ -53,7 +53,7 @@ export default defineComponent({
       roomName.value = event.target.value;
     };
 
-    return { roomsInfo, createOrJoinRoom, inputValue: roomName, updateRoomName };
+    return { roomsInfo, createRoom, inputValue: roomName, updateRoomName };
   },
 });
 </script>

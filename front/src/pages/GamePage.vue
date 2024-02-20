@@ -18,15 +18,15 @@ export default defineComponent({
     TetrisGrid,
   },
   setup() {
-    const roomsInfo = ref([]);
+    const roomInfo = ref([]);
     const { socket } = useSocket();
 
-    socket.on("rooms_info", function (info) {
-      roomsInfo.value = info;
-      console.log("Received updated rooms info:", info);
+    socket.on("room-info", function (info) {
+      roomInfo.value = info;
+      console.log("Current room players info:", info);
     });
 
-    return { roomsInfo };
+    return { roomInfo };
   },
 });
 </script>

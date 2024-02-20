@@ -4,6 +4,7 @@ const cors = require("cors");
 const { Server } = require("socket.io");
 const app = express();
 const path = require("path");
+const SocketManager = require("./src/SocketManager");
 
 app.use(cors());
 
@@ -16,72 +17,37 @@ const io = new Server(server, {
   },
 });
 
-const activeRooms = {};
+const manager = new SocketManager();
 
 io.on("connection", (socket) => {
-  console.log(
-    `\u001b[36m[socket]\u001b[0m User \u001b[33m${socket.id}\u001b[32m connected\u001b[0m`
-  );
-
-  socket.on("join_or_create_room", (roomName) => {
-    socket.join(roomName);
-    const playerId = socket.id;
-
-    if (activeRooms[roomName]) {
-      // If the room already exists, join it
-      const index = activeRooms[roomName].indexOf(playerId);
-      if (index === -1) {
-        activeRooms[roomName].push(playerId);
-        console.log(
-          `\u001b[36m[socket] \u001b[0mUser \u001b[33m${playerId}\u001b[0m joined room \u001b[33m${roomName}\u001b[0m as player ${activeRooms[roomName].length}`
-        );
-      }
-    } else {
-      // If the room doesn't exist, create it and join
-      activeRooms[roomName] = [playerId];
-      console.log(
-        `\u001b[36m[socket] \u001b[0mRoom \u001b[33m${roomName}\u001b[0m created and user \u001b[33m${playerId}\u001b[0m joined as master player 1`
-      );
-    }
-    io.emit("rooms_info", getRoomsInfo());
-  });
+  manager.add_player(socket.id, socket);
 
   socket.on("disconnect", () => {
-    console.log(
-      `\u001b[36m[socket]\u001b[0m User \u001b[33m${socket.id}\u001b[31m disconnected\u001b[0m`
-    );
-    // Remove disconnected user from active rooms
-    for (const room in activeRooms) {
-      if (activeRooms.hasOwnProperty(room)) {
-        const index = activeRooms[room].indexOf(socket.id);
-        if (index !== -1) {
-          activeRooms[room].splice(index, 1);
-          // If no players left in the room, remove it
-          if (activeRooms[room].length === 0) {
-            delete activeRooms[room];
-            console.log(
-              `\u001b[36m[socket] \u001b[0mRoom \u001b[33m${room}\u001b[0m removed`
-            );
-          }
-        }
-      }
-    }
-    io.emit("rooms_info", getRoomsInfo());
+    manager.remove_player(socket.id);
   });
-});
 
-function getRoomsInfo() {
-  const roomsInfo = [];
-  for (const room in activeRooms) {
-    if (activeRooms.hasOwnProperty(room)) {
-      roomsInfo.push({
-        roomName: room,
-        players: activeRooms[room],
-      });
-    }
-  }
-  return roomsInfo;
-}
+  socket.on("leave-room", () => {
+    roomName = manager.get_player_room(socket.id);
+    if (!roomName) return;
+    manager.remove_player_from_room(roomName, socket.id);
+    socket.leave(roomName);
+    io.to(roomName).emit("room-info", manager.get_room(roomName));
+  });
+
+  socket.on("join-room", (roomName) => {
+    manager.add_room(roomName);
+    socket.join(roomName);
+    manager.add_player_to_room(roomName, socket.id);
+    io.emit("rooms-info", manager.get_rooms_info());
+    io.to(roomName).emit("room-info", manager.get_room(roomName));
+  });
+
+  socket.on("delete-room", (roomName) => {
+    manager.remove_room(roomName);
+    io.emit("rooms-info", manager.get_rooms_info());
+  });
+
+});
 
 app.use(express.static("dist"));
 
@@ -91,5 +57,5 @@ app.get("/", function (req, res) {
 });
 
 server.listen(3000, () => {
-  console.log("\nlistening on *:3000");
+  console.log("\nlistening on localhost:3000");
 });
