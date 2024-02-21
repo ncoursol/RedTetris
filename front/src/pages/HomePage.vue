@@ -3,8 +3,8 @@
     <h1>Home</h1>
     <button @click="createRoom">Create a new game</button>
     <input type="text" v-model="inputValue" />
-    <h2>Rooms Information :</h2>
     <div v-if="roomsInfo.length">
+      <h2>Rooms Information :</h2>
       <div v-for="(room, index) in roomsInfo" :key="index">
         <hr />
         <h3>Room: {{ room.roomName }}</h3>
@@ -21,21 +21,24 @@
 
 <script>
 import { defineComponent, ref } from "vue";
-import { useSocket } from "@/plugins/socket";
 import { useRouter } from "vue-router";
+import { useSocket } from "@/plugins/socket";
 
 export default defineComponent({
   name: "HomePage",
-  setup() {
-    const roomsInfo = ref([]);
+  data() {
+    return {
+      roomsInfo: [],
+    };
+  },
+  mounted() {
     const { socket } = useSocket();
+    socket.on("rooms-info", this.handleRoomsInfo);
+  },
+  setup() {
     const router = useRouter();
     const roomName = ref('');
-
-    socket.on("rooms-info", function (info) {
-      roomsInfo.value = info;
-      console.log("Received updated rooms info:", info);
-    });
+    const { socket } = useSocket();
 
     function createRoom() {
       if (roomName.value !== "") {
@@ -53,7 +56,17 @@ export default defineComponent({
       roomName.value = event.target.value;
     };
 
-    return { roomsInfo, createRoom, inputValue: roomName, updateRoomName };
+    return { createRoom, inputValue: roomName, updateRoomName };
+  },
+  methods: {
+    handleRoomsInfo(rooms) {
+      this.roomsInfo = rooms;
+      //console.log(this.roomsInfo);
+    },
+  },
+  beforeUnmount() {
+    const { socket } = useSocket();
+    socket.off("rooms-info", this.handleRoomsInfo);
   },
 });
 </script>

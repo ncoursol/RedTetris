@@ -18,6 +18,7 @@ const io = new Server(server, {
 });
 
 const manager = new SocketManager();
+//manager.verbose = true;
 
 io.on("connection", (socket) => {
   manager.add_player(socket.id, socket);
@@ -31,6 +32,7 @@ io.on("connection", (socket) => {
     if (!roomName) return;
     manager.remove_player_from_room(roomName, socket.id);
     socket.leave(roomName);
+    io.emit("rooms-info", manager.get_rooms_info());
     io.to(roomName).emit("room-info", manager.get_room(roomName));
   });
 
@@ -44,9 +46,11 @@ io.on("connection", (socket) => {
 
   socket.on("delete-room", (roomName) => {
     manager.remove_room(roomName);
-    io.emit("rooms-info", manager.get_rooms_info());
   });
 
+  socket.on("get-rooms", () => {
+    socket.emit("rooms-info", manager.get_rooms_info());
+  });
 });
 
 app.use(express.static("dist"));

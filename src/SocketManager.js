@@ -4,7 +4,7 @@ class SocketManager {
     constructor() {
         this.active_rooms = {};
         this.players = { socket: null, room: null };
-        this.verbose = true;
+        this.verbose = false;
     }
 
     add_player(playerId, socket) {
