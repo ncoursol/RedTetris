@@ -1,24 +1,51 @@
 <template>
-  <div style="border: 1px solid #00fff7">
-    <h1>MainLayout</h1>
-    <button @click="goToHome">Go to Home</button>
-    <router-view />
-  </div>
+    <div class="mainLayout" style="border: 1px solid #00fff7">
+        <img
+            :src="imageUrl"
+            :style="{ transform: `rotate(${rotation}deg)` }"
+            class="logo"
+            @mouseover="rotation += 90"
+            @click="goToHome"
+        />
+        <router-view />
+    </div>
 </template>
 
+<style scoped>
+.mainLayout {
+    background-color: #2b2b2b;
+    color: white;
+}
+.logo {
+    width: 80px;
+    height: 80px;
+    margin: 5px;
+    margin-left: 20px;
+    transition: transform 0.1s ease-in-out;
+    cursor: pointer;
+}
+</style>
+
 <script>
-import { defineComponent } from "vue";
+import { defineComponent, ref } from "vue";
 import { useRouter } from "vue-router";
+import mainTitle from "../../public/mainTitle.gif";
 
 export default defineComponent({
-  name: "MainLayout",
-  setup() {
-    const router = useRouter();
-    const goToHome = () => {
-      router.push("/");
-    };
+    name: "MainLayout",
+    data() {
+        return {
+            imageUrl: "icons/icon-96.png",
+            rotation: ref(0),
+        };
+    },
+    setup() {
+        const router = useRouter();
+        const goToHome = () => {
+            router.push("/");
+        };
 
-    return { goToHome };
-  },
+        return { goToHome, mainTitle };
+    },
 });
 </script>
