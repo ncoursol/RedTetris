@@ -1,20 +1,19 @@
 <template>
-    <div class="homePage" style="border: 1px solid #664078">
+    <div class="homePage">
         <div class="mainTitle">
             <img src="mainTitle.gif" class="titleGif" />
         </div>
         <div class="createBox">
-            <div class="card">
-                <h1 style="margin-top: 0px">Create a new game</h1>
-                <span style="width: 100%">Username</span>
+            <div class="card" style="display: flex; flex-direction: column">
+                <h1 style="margin: 0px; text-align: center">
+                    Create a new game
+                </h1>
+                <h3 style="width: 100%">Username</h3>
                 <input type="text" v-model="inputValue" />
-                <span>Room name</span>
+                <h3>Room name</h3>
                 <input type="text" v-model="inputValue" />
-                <span>Create the JOIN design ?</span>
                 <div class="createBtn" @click="createOrJoinRoom">
-                    <div v-for="i in 3" :key="i"></div>
-                    <span style="width: 47px; height: 50px"></span>
-                    <h1 style="position: absolute">CREATE</h1>
+                    <h1>CREATE</h1>
                 </div>
             </div>
         </div>
@@ -30,17 +29,26 @@
                         backgroundColor: colors[index % colors.length],
                     }"
                 >
-                    <h3 style="margin: 0px">Room: {{ room.roomName }}</h3>
-                    <ul>
-                        <li
+                    <span>
+                        <h1 style="margin: 0px">{{ room.roomName }}</h1>
+                    </span>
+                    <h2 style="margin-bottom: 5px; margin-top: 15">
+                        {{ room.players.length }}p
+                    </h2>
+                    <div class="playerList">
+                        <div
                             v-for="(player, playerIndex) in room.players"
                             :key="playerIndex"
                         >
-                            Player {{ playerIndex
-                            }}{{ !playerIndex ? " (master)" : "" }}:
-                            {{ player }}
-                        </li>
-                    </ul>
+                            <div style="font-size: 20px; font-weight: bold">
+                                P{{ playerIndex + 1 }}
+                            </div>
+                            <div style="margin-left: 5px">{{ player }}</div>
+                        </div>
+                    </div>
+                    <div class="createBtn" @click="createOrJoinRoom">
+                        <h1>JOIN</h1>
+                    </div>
                 </div>
             </div>
             <div v-else>
@@ -51,12 +59,19 @@
 </template>
 
 <style scoped>
+.playerList {
+    margin: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    overflow: auto;
+    max-height: 120px;
+    border-top: 2px solid black;
+    border-bottom: 2px solid black;
+}
 .createBtn {
     bottom: -3px;
     right: -3px;
     letter-spacing: 4px;
-    width: 200px;
-    height: 50px;
     border: 4px solid black;
     position: absolute;
     display: flex;
@@ -65,19 +80,25 @@
     justify-content: center;
     align-items: center;
 }
-.createBtn div {
-    width: 49px;
-    height: 50px;
-    border-right: 2px solid black;
+.createBtn h1 {
+    margin: 20px;
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 .createBtn:hover {
-    background-color: #00eeee;
+    background-color: black;
+    color: white;
 }
 .createBox {
     display: flex;
     margin-top: 4vw;
     flex-direction: column;
     align-items: center;
+}
+.createBox input {
+    width: 97%;
+    height: 30px;
+    font-size: 20px;
 }
 .joinBox {
     margin-left: 30px;
@@ -95,7 +116,6 @@
     border: 4px solid black;
     width: 300px;
     height: 300px;
-    text-align: center;
     box-shadow: 5px 5px 5px #888888;
 }
 .homePage {
@@ -117,6 +137,7 @@
     }
 }
 </style>
+
 <script>
 import { defineComponent, ref } from "vue";
 import { useRouter } from "vue-router";
@@ -130,8 +151,8 @@ export default defineComponent({
                 "#ff000070",
                 "#00ff0070",
                 "#0000ff70",
-                "#ffff0070",
-                "#ff00ff70",
+                "#ffa50070",
+                "#aa00ff70",
                 "#00ffff70",
                 "#ff990070",
             ],

@@ -8,6 +8,10 @@
 #main {
     height: 100vh;
 }
+@font-face {
+    font-family: Druk;
+    src: url('../public/fonts/DrukWide-Heavy-Trial.otf');
+}
 </style>
 
 <script>
