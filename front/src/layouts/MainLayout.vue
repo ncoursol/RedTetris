@@ -1,12 +1,17 @@
 <template>
-    <div class="mainLayout" style="border: 1px solid #00fff7">
-        <img
-            :src="imageUrl"
-            :style="{ transform: `rotate(${rotation}deg)` }"
-            class="logo"
-            @mouseover="rotation += 90"
-            @click="goToHome"
-        />
+    <div class="mainLayout">
+        <div class="navBar">
+            <img
+                :src="imageUrl"
+                :style="{ transform: `rotate(${rotation}deg)` }"
+                class="logo"
+                @mouseover="rotation += 90"
+                @click="goToHome"
+            />
+            <div class="title">
+                RED TETRIS
+            </div>
+        </div>
         <router-view />
     </div>
 </template>
@@ -16,13 +21,27 @@
     background-color: #2b2b2b;
     color: white;
 }
+.navBar {
+    display: flex;
+    align-items: center;
+    height: 72px;
+}
 .logo {
-    width: 80px;
-    height: 80px;
+    width: 60px;
+    height: 60px;
     margin: 5px;
     margin-left: 20px;
     transition: transform 0.1s ease-in-out;
     cursor: pointer;
+}
+.title {
+    width: 100%;
+    display: flex;
+    font-size: 60px;
+    letter-spacing: 12px;
+    font-family: Druk;
+    justify-content: center;
+    
 }
 </style>
 

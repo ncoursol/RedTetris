@@ -1,10 +1,17 @@
 <template>
-  <div style="border: 1px solid #ffd500">
+  <div class="gamePage">
     <h1>Room: {{ room }}</h1>
     <h2>Player ID: {{ player_name }}</h2>
     <TetrisGrid />
   </div>
 </template>
+
+<style scoped>
+.gamePage {
+  background-color: white;
+  color: black;
+}
+</style>
 
 <script>
 import { defineComponent, ref } from "vue";
