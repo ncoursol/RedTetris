@@ -9,17 +9,27 @@
                     Create a new game
                 </h1>
                 <h3 style="width: 100%">Username</h3>
-                <input type="text" v-model="inputValue" />
+                <input type="text" v-model="username" />
                 <h3>Room name</h3>
-                <input type="text" v-model="inputValue" />
-                <div class="createBtn" @click="createOrJoinRoom">
+                <input type="text" v-model="roomName" />
+                <div class="createBtn" @click="joinRoom(roomName, username)">
                     <h1>CREATE</h1>
                 </div>
             </div>
         </div>
-        <div class="joinBox">
+        <div>
+            <div class="joinBox">
             <h1>Join Game</h1>
-            <hr />
+            <hr/>
+            <div v-if="roomsInfo.length" style="margin-bottom: 10px;">
+                <h3>Username</h3>
+                <input
+                    type="text"
+                    style="max-width: 290px"
+                    v-model="usernameJoin"
+                />
+            </div>
+            </div>
             <div v-if="roomsInfo.length" class="cardsList">
                 <div
                     v-for="(room, index) in roomsInfo"
@@ -30,28 +40,38 @@
                     }"
                 >
                     <span>
-                        <h1 style="margin: 0px">{{ room.roomName }}</h1>
+                        <h1 class="overflowHandler">{{ room.roomName }}</h1>
                     </span>
-                    <h2 style="margin-bottom: 5px; margin-top: 15">
-                        {{ room.players.length }}p
+                    <h2 style="margin-bottom: 5px; margin-top: 10px">
+                        {{ room.players.length }} player{{ room.players.length > 1 ? "s" : "" }}
                     </h2>
                     <div class="playerList">
                         <div
                             v-for="(player, playerIndex) in room.players"
                             :key="playerIndex"
+                            class="playerLine"
                         >
-                            <div style="font-size: 20px; font-weight: bold">
+                            <div style="font-size: 20px; font-weight: bold; margin-right: 8px;">
                                 P{{ playerIndex + 1 }}
                             </div>
-                            <div style="margin-left: 5px">{{ player }}</div>
+                            <div class="overflowHandler">
+                                {{
+                                    player.username
+                                        ? player.username
+                                        : player.playerId
+                                }}
+                            </div>
                         </div>
                     </div>
-                    <div class="createBtn" @click="createOrJoinRoom">
+                    <div
+                        class="createBtn"
+                        @click="joinRoom(room.roomName, usernameJoin)"
+                    >
                         <h1>JOIN</h1>
                     </div>
                 </div>
             </div>
-            <div v-else>
+            <div v-else class="joinBox">
                 <h3>No rooms available...</h3>
             </div>
         </div>
@@ -63,10 +83,16 @@
     margin: 10px;
     padding-top: 10px;
     padding-bottom: 10px;
-    overflow: auto;
+    overflow-x: auto;
     max-height: 120px;
     border-top: 2px solid black;
     border-bottom: 2px solid black;
+    scrollbar-color: black rgba(255, 255, 255, 0);
+}
+.playerLine {
+    display: flex;
+    align-items: center;
+    margin: 5px;
 }
 .createBtn {
     bottom: -3px;
@@ -91,11 +117,12 @@
 }
 .createBox {
     display: flex;
-    margin-top: 4vw;
+    padding-top: 4vw;
     flex-direction: column;
     align-items: center;
 }
-.createBox input {
+
+input {
     width: 97%;
     height: 30px;
     font-size: 20px;
@@ -109,13 +136,18 @@
     flex-wrap: wrap;
     justify-content: center;
 }
+.overflowHandler {
+    margin: 0px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 .card {
     position: relative;
     margin: 10px;
     padding: 10px;
     border: 4px solid black;
-    width: 300px;
-    height: 300px;
+    width: 292px;
+    height: 292px;
     box-shadow: 5px 5px 5px #888888;
 }
 .homePage {
@@ -136,10 +168,23 @@
         width: 100%;
     }
 }
+@media (max-width: 550px) {
+    .mainTitle {
+        display: none;
+    }
+    .joinBox {
+        margin-left: 14px;
+        margin-right: 14px;
+    }
+    .card {
+        margin-left: 0px;
+        margin-right: 0px;
+    }
+}
 </style>
 
 <script>
-import { defineComponent, ref } from "vue";
+import { defineComponent } from "vue";
 import { useRouter } from "vue-router";
 import { useSocket } from "@/plugins/socket";
 
@@ -151,38 +196,39 @@ export default defineComponent({
                 "#ff000070",
                 "#00ff0070",
                 "#0000ff70",
-                "#ffa50070",
+                "#ffff0070",
                 "#aa00ff70",
                 "#00ffff70",
-                "#ff990070",
+                "#ffa50070",
             ],
             roomsInfo: [],
+            roomName: "",
+            username: "",
+            usernameJoin: "",
         };
     },
     mounted() {
         const { socket } = useSocket();
+        socket.emit("get-rooms");
         socket.on("rooms-info", this.handleRoomsInfo);
     },
     setup() {
         const router = useRouter();
-        const roomName = ref("");
         const { socket } = useSocket();
 
-        function createRoom() {
-            if (roomName.value !== "") {
-                socket.emit("join-room", roomName.value);
-                goToRoom();
+        const joinRoom = (roomName, username) => {
+            if (roomName !== "") {
+                socket.emit("join-room", roomName, username);
+                goToRoom(roomName);
             }
-        }
-        const goToRoom = () => {
-            const gameRoute = `${roomName.value}[${socket.id}]`;
+        };
+
+        const goToRoom = (roomName) => {
+            const gameRoute = `${roomName}[${socket.id}]`;
             router.push(gameRoute);
         };
 
-        const updateRoomName = (event) => {
-            roomName.value = event.target.value;
-        };
-        return { createRoom, inputValue: roomName, updateRoomName };
+        return { joinRoom };
     },
     methods: {
         handleRoomsInfo(rooms) {

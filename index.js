@@ -33,15 +33,15 @@ io.on("connection", (socket) => {
     manager.remove_player_from_room(roomName, socket.id);
     socket.leave(roomName);
     io.emit("rooms-info", manager.get_rooms_info());
-    io.to(roomName).emit("room-info", manager.get_room(roomName));
+    io.to(roomName).emit("room-info", manager.get_room_info(roomName));
   });
 
-  socket.on("join-room", (roomName) => {
+  socket.on("join-room", (roomName, username) => {
     manager.add_room(roomName);
     socket.join(roomName);
-    manager.add_player_to_room(roomName, socket.id);
+    manager.add_player_to_room(roomName, socket.id, username);
     io.emit("rooms-info", manager.get_rooms_info());
-    io.to(roomName).emit("room-info", manager.get_room(roomName));
+    io.to(roomName).emit("room-info", manager.get_room_info(roomName));
   });
 
   socket.on("delete-room", (roomName) => {

@@ -43,11 +43,23 @@
     justify-content: center;
     
 }
+@media (max-width: 900px) {
+    .title {
+        font-size: 40px;
+        letter-spacing: 10px;
+    }
+}
+@media (max-width: 550px) {
+    .title {
+        font-size: 30px;
+        letter-spacing: 8px;
+        margin-left: 10px;
+        overflow: hidden;
+    }
+}
 </style>
 
 <script>
-import { defineComponent } from "vue";
-import { useSocket } from "@/plugins/socket";
 import { defineComponent, ref } from "vue";
 import { useRouter } from "vue-router";
 import mainTitle from "../../public/mainTitle.gif";
@@ -62,18 +74,12 @@ export default defineComponent({
     },
     setup() {
         const router = useRouter();
-        const { socket } = useSocket();
-
-        function leaveRoom() {
-            socket.emit("leave-room");
-            goToHome();
-        }
 
         const goToHome = () => {
             router.push("/");
         };
 
-        return { leaveRoom, mainTitle };
+        return { goToHome, mainTitle };
     },
 });
 </script>
