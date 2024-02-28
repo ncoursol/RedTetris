@@ -141,6 +141,7 @@ input {
 .overflowHandler {
     margin: 0px;
     overflow: hidden;
+    white-space: nowrap;
     text-overflow: ellipsis;
 }
 .card {
