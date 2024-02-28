@@ -9,10 +9,12 @@
                     Create a new game
                 </h1>
                 <h3 style="width: 100%">Username</h3>
+
                 <input type="text" v-model="username" />
                 <h3>Room name</h3>
                 <input type="text" v-model="roomName" />
                 <div class="createBtn" @click="joinRoom(roomName, username)">
+
                     <h1>CREATE</h1>
                 </div>
             </div>
