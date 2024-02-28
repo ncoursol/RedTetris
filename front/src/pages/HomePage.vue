@@ -1,10 +1,10 @@
 <template>
   <div style="border: 1px solid #664078">
     <h1>Home</h1>
-    <button @click="createOrJoinRoom">Create a new game</button>
+    <button @click="createRoom">Create a new game</button>
     <input type="text" v-model="inputValue" />
-    <h2>Rooms Information :</h2>
     <div v-if="roomsInfo.length">
+      <h2>Rooms Information :</h2>
       <div v-for="(room, index) in roomsInfo" :key="index">
         <hr />
         <h3>Room: {{ room.roomName }}</h3>
@@ -21,25 +21,28 @@
 
 <script>
 import { defineComponent, ref } from "vue";
-import { useSocket } from "@/plugins/socket";
 import { useRouter } from "vue-router";
+import { useSocket } from "@/plugins/socket";
 
 export default defineComponent({
   name: "HomePage",
-  setup() {
-    const roomsInfo = ref([]);
+  data() {
+    return {
+      roomsInfo: [],
+    };
+  },
+  mounted() {
     const { socket } = useSocket();
+    socket.on("rooms-info", this.handleRoomsInfo);
+  },
+  setup() {
     const router = useRouter();
     const roomName = ref('');
+    const { socket } = useSocket();
 
-    socket.on("rooms_info", function (info) {
-      roomsInfo.value = info;
-      console.log("Received updated rooms info:", info);
-    });
-
-    function createOrJoinRoom() {
+    function createRoom() {
       if (roomName.value !== "") {
-        socket.emit("join_or_create_room", roomName.value);
+        socket.emit("join-room", roomName.value);
         goToRoom();
       }
     }
@@ -53,7 +56,17 @@ export default defineComponent({
       roomName.value = event.target.value;
     };
 
-    return { roomsInfo, createOrJoinRoom, inputValue: roomName, updateRoomName };
+    return { createRoom, inputValue: roomName, updateRoomName };
+  },
+  methods: {
+    handleRoomsInfo(rooms) {
+      this.roomsInfo = rooms;
+      //console.log(this.roomsInfo);
+    },
+  },
+  beforeUnmount() {
+    const { socket } = useSocket();
+    socket.off("rooms-info", this.handleRoomsInfo);
   },
 });
 </script>
