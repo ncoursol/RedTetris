@@ -8,7 +8,7 @@
     "packages/*"
   ],
   "scripts": {
-    "back": "node index.js",
+    "back": "nodemon index.js",
     "front": "pnpm --filter front serve",
     "build": "cd front && pnpm run build --dest ../dist",
     "init": "pnpm install && cd front && pnpm install",

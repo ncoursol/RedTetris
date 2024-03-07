@@ -29,11 +29,12 @@ class SocketManager {
         this.logSocket(`Room ${roomName} removed`);
     }
 
-    add_player_to_room(roomName, playerId) {
+    add_player_to_room(roomName, playerId, username) {
         if (this.active_rooms[roomName].indexOf(playerId) !== -1) return;
         this.active_rooms[roomName].push(playerId);
         this.players[playerId].room = roomName;
-        this.logSocket(`User ${playerId} joined room ${roomName}`);
+        this.players[playerId].username = username;
+        this.logSocket(`User ${playerId}(${username}) joined room ${roomName}`);
     }
 
     remove_player_from_room(roomName, playerId) {
@@ -47,6 +48,18 @@ class SocketManager {
             }
         }
         this.players[playerId].room = null;
+    }
+
+    get_players_info(roomName) {
+        const playersInfo = [];
+        for (const playerId of this.active_rooms[roomName]) {
+            if (!this.players[playerId]) continue;
+            playersInfo.push({
+                playerId,
+                username: this.players[playerId].username,
+            });
+        }
+        return playersInfo;
     }
 
     get_rooms_info() {
@@ -64,7 +77,7 @@ class SocketManager {
         if (!this.active_rooms[roomName]) return;
         return {
             roomName,
-            players: this.active_rooms[roomName],
+            players: this.get_players_info(roomName),
         };
     }
 
