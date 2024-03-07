@@ -3,7 +3,7 @@ const { log } = require("console");
 class SocketManager {
     constructor() {
         this.active_rooms = {};
-        this.players = { socket: null, room: null, username: null};
+        this.players = {};
         this.verbose = false;
     }
 
@@ -65,12 +65,10 @@ class SocketManager {
     get_rooms_info() {
         const roomsInfo = [];
         for (const room in this.active_rooms) {
-            if (this.active_rooms.hasOwnProperty(room)) {
-                roomsInfo.push({
-                    roomName: room,
-                    players: this.get_players_info(room),
-                });
-            }
+            roomsInfo.push({
+                roomName: room,
+                players: this.active_rooms[room],
+            });
         }
         return roomsInfo;
     }
