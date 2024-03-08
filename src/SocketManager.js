@@ -67,7 +67,8 @@ class SocketManager {
         for (const room in this.active_rooms) {
             roomsInfo.push({
                 roomName: room,
-                players: this.active_rooms[room],
+                players: this.get_players_info(room),
+                state: this.active_rooms[room].state,
             });
         }
         return roomsInfo;
@@ -78,7 +79,13 @@ class SocketManager {
         return {
             roomName,
             players: this.get_players_info(roomName),
+            state: this.active_rooms[roomName].state,
         };
+    }
+
+    change_game_state(roomName, gameState) {
+        if (!this.active_rooms[roomName]) return;
+        this.active_rooms[roomName].state = gameState;
     }
 
     get_player_room(playerId) {
