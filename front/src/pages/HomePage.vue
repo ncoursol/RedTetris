@@ -79,10 +79,14 @@
                         </div>
                     </div>
                     <div
+                        v-if="room.state === 'waiting'"
                         class="createBtn"
                         @click="joinRoom(room.roomName, usernameJoin, 'join')"
                     >
                         <h1>JOIN</h1>
+                    </div>
+                    <div v-else>
+                        <h3 class="inGameMsg">Game in progress...</h3>
                     </div>
                 </div>
             </div>
@@ -103,6 +107,13 @@
     border-top: 2px solid black;
     border-bottom: 2px solid black;
     scrollbar-color: black rgba(255, 255, 255, 0);
+}
+.inGameMsg {
+    position: absolute;
+    font-size: x-large;
+    bottom: 10px;
+    font-style: italic;
+    margin: 0px;
 }
 .playerLine {
     display: flex;
@@ -236,7 +247,7 @@ export default defineComponent({
         const joinRoom = (roomName, username, type) => {
             socket.emit("join-room", roomName, username, type, (error) => {
                 if (error === "") {
-                    const gameRoute = `${roomName}[${socket.id}]`;
+                    const gameRoute = `${roomName}[${username}]`;
                     router.push(gameRoute);
                 } else {
                     errorMsg.value = error;
@@ -246,7 +257,7 @@ export default defineComponent({
 
         const handleRoomsInfo = (rooms) => {
             roomsInfo.value = rooms;
-            console.log(roomsInfo.value);
+            //console.log(roomsInfo.value);
         };
 
         onMounted(() => {

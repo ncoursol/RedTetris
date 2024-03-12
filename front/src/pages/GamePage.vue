@@ -1,5 +1,9 @@
 <template>
     <div class="gamePage">
+        <div v-if="isCurrentMaster">
+            <button @click="setState('playing')">Start Game</button>
+            <button @click="setState('waiting')">Waiting for player</button>
+        </div>
         <h1>Room: {{ room }}</h1>
         <h2>Player ID: {{ player_name }}</h2>
         <div v-for="(player, index) in roomsInfo.players" :key="index">
@@ -34,28 +38,38 @@ export default defineComponent({
     setup(props) {
         const { socket } = useSocket();
         const roomsInfo = ref([]);
+        const isCurrentMaster = ref(false);
 
         const handleRoomsInfo = (rooms) => {
             roomsInfo.value = rooms;
-            console.log(roomsInfo.value);
+            //console.log(roomsInfo.value);
+            isCurrentMaster.value = rooms.players[0].playerId === socket.id;
         };
 
         const handleBeforeUnload = () => {
             socket.emit("leave-room");
         };
 
+        const setState = (state) => {
+            socket.emit("room-state", props.room, state);
+        };
+
         onMounted(() => {
             socket.on("rooms-info", handleRoomsInfo);
             socket.emit("get-rooms", props.room);
+            window.addEventListener("beforeunload", handleBeforeUnload);
         });
 
         onUnmounted(() => {
             socket.off("rooms-info", handleRoomsInfo);
             handleBeforeUnload();
+            window.removeEventListener("beforeunload", handleBeforeUnload);
         });
 
         return {
             roomsInfo,
+            setState,
+            isCurrentMaster,
         };
     },
 });

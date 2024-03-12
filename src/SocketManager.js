@@ -21,6 +21,7 @@ class SocketManager {
     add_room(roomName) {
         if (this.active_rooms[roomName]) return;
         this.active_rooms[roomName] = [];
+        this.active_rooms[roomName].state = "waiting";
         this.logSocket(`Room ${roomName} created`);
     }
 
@@ -53,7 +54,6 @@ class SocketManager {
     get_players_info(roomName) {
         const playersInfo = [];
         for (const playerId of this.active_rooms[roomName]) {
-            if (!this.players[playerId]) continue;
             playersInfo.push({
                 playerId,
                 username: this.players[playerId].username,
@@ -65,11 +65,14 @@ class SocketManager {
     get_rooms_info() {
         const roomsInfo = [];
         for (const room in this.active_rooms) {
-            roomsInfo.push({
-                roomName: room,
-                players: this.get_players_info(room),
-                state: this.active_rooms[room].state,
-            });
+            if (this.active_rooms[room].length === 0) this.remove_room(room);
+            else {
+                roomsInfo.push({
+                    roomName: room,
+                    players: this.get_players_info(room),
+                    state: this.active_rooms[room].state,
+                });
+            }
         }
         return roomsInfo;
     }
@@ -83,9 +86,10 @@ class SocketManager {
         };
     }
 
-    change_game_state(roomName, gameState) {
+    set_room_state(roomName, roomState) {
         if (!this.active_rooms[roomName]) return;
-        this.active_rooms[roomName].state = gameState;
+        if (roomState !== "waiting" && roomState !== "playing") return;
+        this.active_rooms[roomName].state = roomState;
     }
 
     get_player_room(playerId) {

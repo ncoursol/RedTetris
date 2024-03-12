@@ -7,6 +7,7 @@ const path = require("path");
 const SocketManager = require("./src/SocketManager");
 
 const LOBBY_ROOM = "lobby";
+
 app.use(cors());
 
 const server = http.createServer(app);
@@ -34,10 +35,10 @@ io.on("connection", (socket) => {
         roomName = manager.get_player_room(socket.id);
         if (!roomName) return;
         manager.remove_player_from_room(roomName, socket.id);
+        socket.to(roomName).emit("rooms-info", manager.get_room_info(roomName));
         socket.leave(roomName);
         socket.join(LOBBY_ROOM);
-        socket.to(roomName).emit("rooms-info", manager.get_room_info(roomName));
-        io.to(LOBBY_ROOM).emit("rooms-info", manager.get_rooms_info());
+        socket.to(LOBBY_ROOM).emit("rooms-info", manager.get_rooms_info());
     });
 
     socket.on("join-room", (roomName, username, type, callback) => {
@@ -59,15 +60,25 @@ io.on("connection", (socket) => {
             socket.to(LOBBY_ROOM).emit("rooms-info", manager.get_rooms_info());
             socket.leave(LOBBY_ROOM);
             socket.join(roomName);
-            socket.to(roomName).emit("rooms-info", manager.get_room_info(roomName));
+            socket
+                .to(roomName)
+                .emit("rooms-info", manager.get_room_info(roomName));
             callback("");
         }
     });
 
-    socket.on("game_state", (roomName, gameState) => {
-        manager.change_game_state(roomName, gameState);
-        socket.to(LOBBY_ROOM).emit("rooms-info", manager.get_rooms_info());
-        io.to(roomName).emit("rooms-info", manager.get_room_info(roomName));
+    socket.on("room-state", (roomName, roomState) => {
+        if (
+            manager.get_player_room(socket.id) != roomName ||
+            !manager.active_rooms[roomName] ||
+            manager.active_rooms[roomName].state == roomState
+        )
+            return;
+        manager.set_room_state(roomName, roomState);
+        if (roomState == "waiting" || roomState == "playing") {
+            socket.to(LOBBY_ROOM).emit("rooms-info", manager.get_rooms_info());
+            io.to(roomName).emit("rooms-info", manager.get_room_info(roomName));
+        }
     });
 
     socket.on("delete-room", (roomName) => {
@@ -76,7 +87,10 @@ io.on("connection", (socket) => {
 
     socket.on("get-rooms", (roomName) => {
         if (roomName) {
-            io.to(socket.id).emit("rooms-info", manager.get_room_info(roomName));
+            io.to(socket.id).emit(
+                "rooms-info",
+                manager.get_room_info(roomName)
+            );
         } else {
             io.to(socket.id).emit("rooms-info", manager.get_rooms_info());
         }
