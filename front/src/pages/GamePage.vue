@@ -1,10 +1,17 @@
 <template>
     <div class="gamePage">
+        <div v-if="isCurrentMaster">
+            <button @click="setState('playing')">Start Game</button>
+            <button @click="setState('waiting')">Waiting for player</button>
+        </div>
         <h1>Room: {{ room }}</h1>
         <h2>Player ID: {{ player_name }}</h2>
-        <div v-for="(room, index) in roomsInfo" :key="index">
+        <div v-for="(player, index) in roomsInfo.players" :key="index">
             <hr />
-            <h3>Players: {{ room }}</h3>
+            <h3>
+                Players:
+                {{ player.username ? player.username : player.playerId }}
+            </h3>
         </div>
         <TetrisGrid />
     </div>
@@ -18,10 +25,9 @@
 </style>
 
 <script>
-import { defineComponent, onUnmounted } from "vue";
+import { defineComponent, onMounted, onUnmounted, ref } from "vue";
 import TetrisGrid from "../components/TetrisGrid.vue";
 import { useSocket } from "@/plugins/socket";
-import { onBeforeRouteLeave } from "vue-router";
 
 export default defineComponent({
     props: ["room", "player_name"],
@@ -29,41 +35,42 @@ export default defineComponent({
     components: {
         TetrisGrid,
     },
-    data() {
-        return {
-            roomsInfo: [],
-        };
-    },
-    setup() {
+    setup(props) {
         const { socket } = useSocket();
+        const roomsInfo = ref([]);
+        const isCurrentMaster = ref(false);
 
-        onBeforeRouteLeave((to, from, next) => {
-            socket.emit("leave-room");
-            next();
-        });
+        const handleRoomsInfo = (rooms) => {
+            roomsInfo.value = rooms;
+            //console.log(roomsInfo.value);
+            isCurrentMaster.value = rooms.players[0].playerId === socket.id;
+        };
+
         const handleBeforeUnload = () => {
             socket.emit("leave-room");
         };
 
-        window.addEventListener("beforeunload", handleBeforeUnload);
+        const setState = (state) => {
+            socket.emit("room-state", props.room, state);
+        };
+
+        onMounted(() => {
+            socket.on("rooms-info", handleRoomsInfo);
+            socket.emit("get-rooms", props.room);
+            window.addEventListener("beforeunload", handleBeforeUnload);
+        });
 
         onUnmounted(() => {
+            socket.off("rooms-info", handleRoomsInfo);
+            handleBeforeUnload();
             window.removeEventListener("beforeunload", handleBeforeUnload);
         });
-    },
-    mounted() {
-        const { socket } = useSocket();
-        socket.on("room-info", this.handleRoomInfo);
-    },
-    methods: {
-        handleRoomInfo(rooms) {
-            this.roomsInfo = rooms;
-            //console.log(this.roomsInfo);
-        },
-    },
-    beforeUnmount() {
-        const { socket } = useSocket();
-        socket.off("room-info", this.handleRoomInfo);
+
+        return {
+            roomsInfo,
+            setState,
+            isCurrentMaster,
+        };
     },
 });
 </script>

@@ -114,7 +114,39 @@ describe("Room", function () {
             expect(Object.keys(manager.active_rooms).length).toEqual(0);
         });
         it("should return undefined if the room does not exist", function () {
-            expect(manager.remove_player_from_room("non-existent-room", player1)).toBeUndefined();
+            expect(
+                manager.remove_player_from_room("non-existent-room", player1)
+            ).toBeUndefined();
+        });
+    });
+
+    describe("get_state", function () {
+        beforeAll(function () {
+            manager = new SocketManager();
+            manager.add_player(player1, "socket");
+            manager.add_player(player2, "socket");
+            manager.add_room(room1);
+            manager.add_player_to_room(room1, player1);
+            manager.add_player_to_room(room1, player2);
+        });
+        it("should as waiting state by default", function () {
+            const info = manager.get_room_info(room1);
+            expect(info.state).toEqual("waiting");
+        });
+        it("should change room state", function () {
+            manager.set_room_state(room1, "playing");
+            const info = manager.get_room_info(room1);
+            expect(info.state).toEqual("playing");
+        });
+        it("should not change room state if the room does not exist", function () {
+            manager.set_room_state("non-existent-room", "playing");
+            const info = manager.get_room_info("non-existent-room");
+            expect(info).toBeUndefined();
+        });
+        it("should not change room state if the state is not playing or wainting", function () {
+            manager.set_room_state(room1, "non-existent-state");
+            const info = manager.get_room_info(room1);
+            expect(info.state).toEqual("playing");
         });
     });
 
@@ -124,16 +156,17 @@ describe("Room", function () {
             manager.add_player(player1, "socket");
             manager.add_player(player2, "socket");
             manager.add_room(room1);
-            manager.add_room(room2);
+            manager.add_room(room2); // should be removed by get_room_info cause no players
             manager.add_player_to_room(room1, player1);
             manager.add_player_to_room(room1, player2);
         });
         it("should return an array of room objects", function () {
             const roomsInfo = manager.get_rooms_info();
             expect(roomsInfo).toBeInstanceOf(Array);
-            expect(roomsInfo.length).toEqual(2);
+            expect(roomsInfo.length).toEqual(1);
             expect(roomsInfo[0]).toHaveProperty("roomName");
             expect(roomsInfo[0]).toHaveProperty("players");
+            expect(roomsInfo[0].players.length).toEqual(2);
         });
         it("should return a room object", function () {
             const roomInfo = manager.get_room_info(room1);
@@ -165,7 +198,9 @@ describe("Room", function () {
             const spy = jest.spyOn(console, "log");
             manager.verbose = true;
             manager.logSocket("test");
-            expect(spy).toHaveBeenCalledWith(`\u001b[36m[socket]\u001b[0m test`);
+            expect(spy).toHaveBeenCalledWith(
+                `\u001b[36m[socket]\u001b[0m test`
+            );
             spy.mockRestore();
         });
         it("should not log to the console if verbose is false", function () {
