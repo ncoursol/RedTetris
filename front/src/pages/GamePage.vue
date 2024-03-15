@@ -57,13 +57,11 @@ export default defineComponent({
         onMounted(() => {
             socket.on("rooms-info", handleRoomsInfo);
             socket.emit("get-rooms", props.room);
-            window.addEventListener("beforeunload", handleBeforeUnload);
         });
 
         onUnmounted(() => {
             socket.off("rooms-info", handleRoomsInfo);
             handleBeforeUnload();
-            window.removeEventListener("beforeunload", handleBeforeUnload);
         });
 
         return {

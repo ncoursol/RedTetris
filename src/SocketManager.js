@@ -54,10 +54,12 @@ class SocketManager {
     get_players_info(roomName) {
         const playersInfo = [];
         for (const playerId of this.active_rooms[roomName]) {
-            playersInfo.push({
-                playerId,
-                username: this.players[playerId].username,
-            });
+            if (this.players[playerId]) {
+                playersInfo.push({
+                    playerId,
+                    username: this.players[playerId].username,
+                });
+            }
         }
         return playersInfo;
     }
