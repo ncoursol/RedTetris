@@ -95,7 +95,16 @@ class SocketManager {
     }
 
     get_player_room(playerId) {
-        return this.players[playerId].room;
+        return this.players[playerId]?.room;
+    }
+
+    get_player_room_by_username(username) {
+        for (const playerId in this.players) {
+            if (this.players[playerId].username === username) {
+                return this.players[playerId].room;
+            }
+        }
+        return null;
     }
 
     logSocket(txt) {
