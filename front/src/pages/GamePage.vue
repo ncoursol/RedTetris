@@ -1,9 +1,10 @@
 <template>
     <div class="gamePage">
         <div v-if="isCurrentMaster">
-            <button @click="setState('playing')">Start Game</button>
-            <button @click="setState('waiting')">Waiting for player</button>
+            <Button buttonText="Start Game" actionType="playing" @action="setState" />
+            <Button buttonText="Waiting for player" actionType="playing" @action="setState" />
         </div>
+
         <h1>Room: {{ room }}</h1>
         <h2>Player ID: {{ player_name }}</h2>
         <div v-for="(player, index) in roomsInfo.players" :key="index">
@@ -13,7 +14,24 @@
                 {{ player.username ? player.username : player.playerId }}
             </h3>
         </div>
-        <TetrisGrid />
+        <div class="grid-ctn">
+            <!-- My grid -->
+            <div class="myGrid">
+                <TetrisGrid :isMainGrid="true" />
+            </div>
+            <!-- opponents' grids, between 1 and 9 -->
+            <div class="opponentsGrid">
+                <TetrisGrid :isMainGrid="false" />
+                <TetrisGrid :isMainGrid="false" />
+                <TetrisGrid :isMainGrid="false" />
+                <TetrisGrid :isMainGrid="false" />
+                <TetrisGrid :isMainGrid="false" />
+                <TetrisGrid :isMainGrid="false" />
+                <TetrisGrid :isMainGrid="false" />
+                <TetrisGrid :isMainGrid="false" />
+                <TetrisGrid :isMainGrid="false" />
+            </div>
+        </div>
     </div>
 </template>
 
@@ -22,17 +40,49 @@
     background-color: white;
     color: black;
 }
+
+.grid-ctn {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    gap: 20px;
+    background-color: aqua;
+    max-height: 50vh;
+}
+
+.myGrid {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    max-width: 50%;
+}
+
+.opponentsGrid {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    /* justify-content: space-around; */
+    max-width: 50%;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 5px;
+
+}
 </style>
 
 <script>
 import { defineComponent, onMounted, onUnmounted, ref } from "vue";
 import TetrisGrid from "../components/TetrisGrid.vue";
 import { useSocket } from "@/plugins/socket";
+import Button from '../components/Button.vue';
+
 
 export default defineComponent({
     props: ["room", "player_name"],
     name: "GamePage",
     components: {
+        Button,
         TetrisGrid,
     },
     setup(props) {

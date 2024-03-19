@@ -1,33 +1,35 @@
 <template>
-  <div class="tetris-grid">
-    <div v-for="row in grid" :key="row" class="tetris-row">
-      <div
-        v-for="col in row"
-        :key="col"
-        class="tetris-cell"
-        :style="{ background: col }"
-      ></div>
+  <div class="tetris-grid" :class="{ 'main-grid': isMainGrid, 'opponent-grid': !isMainGrid }">
+    <div v-for="(row, rowIndex) in grid" :key="`row-${rowIndex}`" class="tetris-row">
+      <div v-for="(color, colIndex) in row" :key="`col-${rowIndex}-${colIndex}`" class="tetris-cell"
+        :style="{ backgroundColor: color }"></div>
     </div>
   </div>
 </template>
 
 <script>
 import { defineComponent } from "vue";
+// import { io } from "socket.io-client";
 
 export default defineComponent({
   name: "TetrisGrid",
+  props: {
+    isMainGrid: {
+      type: Boolean,
+      default: false,
+    },
+  },
   computed: {
-    // tmp random grid
     grid() {
-        let grid = [];
-        for (let i = 0; i < 20; i++) {
-          let row = [];
-          for (let j = 0; j < 10; j++) {
-            row.push(`#${Math.floor(Math.random() * 16777215).toString(16)}`);
-          }
-          grid.push(row);
+      let grid = [];
+      for (let i = 0; i < 20; i++) {
+        let row = [];
+        for (let j = 0; j < 10; j++) {
+          row.push(`#${Math.floor(Math.random() * 16777215).toString(16)}`);
         }
-        return grid;
+        grid.push(row);
+      }
+      return grid;
     },
   },
 });
@@ -35,20 +37,31 @@ export default defineComponent({
 
 <style scoped>
 .tetris-grid {
-  margin-top: 20px;
   display: flex;
   flex-direction: column;
-  border: 1px solid #ff0000;
-  width: fit-content;
+  height: 100%;
+  max-height: 100%;
+  width: 100%;
+  max-height: 100%;
+  /* Empêche la grille de dépasser du conteneur parent */
+  overflow: hidden;
 }
 
 .tetris-row {
   display: flex;
+  flex-grow: 1;
+  width: 100%;
 }
 
 .tetris-cell {
-  width: 30px;
-  height: 30px;
-  border: 1px solid #0000ff;
+  background-color: #ccc;
+  flex: 1;
+  position: relative;
+}
+
+.tetris-cell::before {
+  content: "";
+  display: block;
+  padding-top: 100%;
 }
 </style>
