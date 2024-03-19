@@ -22,13 +22,28 @@ const io = new Server(server, {
 const manager = new SocketManager();
 //manager.verbose = true;
 
+const sessionStorage = new Map();
+
+io.use((socket, next) => {
+    const sessionId = socket.handshake.auth.sessionID;
+    if (sessionId) {
+        const sessionData = sessionStorage.get(sessionId);
+        if (sessionData) {
+            socket.id = sessionData;
+            return next();
+        }
+    }
+    socket.handshake.auth.sessionID = socket.id;
+    sessionStorage.set(socket.id, socket.id);
+    next();
+});
+
 io.on("connection", (socket) => {
     manager.add_player(socket.id, socket);
     socket.join(LOBBY_ROOM);
 
-    socket.on("disconnect", () => {
-        manager.remove_player(socket.id);
-        socket.leave(LOBBY_ROOM);
+    socket.emit("session", {
+        sessionID: socket.handshake.auth.sessionID,
     });
 
     socket.on("leave-room", () => {
@@ -77,8 +92,8 @@ io.on("connection", (socket) => {
         manager.set_room_state(roomName, roomState);
         if (roomState == "waiting" || roomState == "playing") {
             socket.to(LOBBY_ROOM).emit("rooms-info", manager.get_rooms_info());
-            io.to(roomName).emit("rooms-info", manager.get_room_info(roomName));
         }
+        io.to(roomName).emit("rooms-info", manager.get_room_info(roomName));
     });
 
     socket.on("delete-room", (roomName) => {
@@ -97,11 +112,25 @@ io.on("connection", (socket) => {
     });
 });
 
-app.use(express.static("dist"));
+app.use(express.static(path.join(__dirname, "dist")));
 
-app.get("/", function (req, res) {
-    const filePath = path.join(__dirname, "dist", "index.html");
-    res.sendFile(filePath);
+app.get("/checkRoom/:room/:player_name", (req, res) => {
+    const roomName = req.params.room;
+    const playerName = req.params.player_name;
+    
+    if (!manager.active_rooms[roomName]) {
+        return res.status(404).send("Room does not exist");
+    }
+    
+    const playerRoom = manager.get_player_room_by_username(playerName);
+    if (playerRoom !== roomName) {
+        return res.status(403).send("Player is not in the room");
+    } 
+    res.status(200).send("Room and player verified"); 
+});
+
+app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "dist", "index.html"));
 });
 
 server.listen(3000, () => {

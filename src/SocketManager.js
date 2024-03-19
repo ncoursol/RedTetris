@@ -54,10 +54,12 @@ class SocketManager {
     get_players_info(roomName) {
         const playersInfo = [];
         for (const playerId of this.active_rooms[roomName]) {
-            playersInfo.push({
-                playerId,
-                username: this.players[playerId].username,
-            });
+            if (this.players[playerId]) {
+                playersInfo.push({
+                    playerId,
+                    username: this.players[playerId].username,
+                });
+            }
         }
         return playersInfo;
     }
@@ -88,12 +90,20 @@ class SocketManager {
 
     set_room_state(roomName, roomState) {
         if (!this.active_rooms[roomName]) return;
-        if (roomState !== "waiting" && roomState !== "playing") return;
         this.active_rooms[roomName].state = roomState;
     }
 
     get_player_room(playerId) {
-        return this.players[playerId].room;
+        return this.players[playerId]?.room;
+    }
+
+    get_player_room_by_username(username) {
+        for (const playerId in this.players) {
+            if (this.players[playerId].username === username) {
+                return this.players[playerId].room;
+            }
+        }
+        return null;
     }
 
     logSocket(txt) {
