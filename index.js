@@ -92,8 +92,8 @@ io.on("connection", (socket) => {
         manager.set_room_state(roomName, roomState);
         if (roomState == "waiting" || roomState == "playing") {
             socket.to(LOBBY_ROOM).emit("rooms-info", manager.get_rooms_info());
-            io.to(roomName).emit("rooms-info", manager.get_room_info(roomName));
         }
+        io.to(roomName).emit("rooms-info", manager.get_room_info(roomName));
     });
 
     socket.on("delete-room", (roomName) => {
@@ -118,12 +118,10 @@ app.get("/checkRoom/:room/:player_name", (req, res) => {
     const roomName = req.params.room;
     const playerName = req.params.player_name;
     
-    // Check if the room exists
     if (!manager.active_rooms[roomName]) {
         return res.status(404).send("Room does not exist");
     }
     
-    // Check if the player is in the room
     const playerRoom = manager.get_player_room_by_username(playerName);
     if (playerRoom !== roomName) {
         return res.status(403).send("Player is not in the room");

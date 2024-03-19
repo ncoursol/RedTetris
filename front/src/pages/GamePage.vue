@@ -2,8 +2,10 @@
     <div class="gamePage">
         <div v-if="isCurrentMaster">
             <button @click="setState('playing')">Start Game</button>
-            <button @click="setState('waiting')">Waiting for player</button>
+            <button @click="setState('waiting')">Stop Game</button>
+            <button @click="setState('pause')">Pause Game</button>
         </div>
+        {{ roomsInfo.state }}
         <h1>Room: {{ room }}</h1>
         <h2>Player ID: {{ player_name }}</h2>
         <div v-for="(player, index) in roomsInfo.players" :key="index">
@@ -36,6 +38,7 @@ export default defineComponent({
         TetrisGrid,
     },
     setup(props) {
+        
         const { socket } = useSocket();
         const roomsInfo = ref([]);
         const isCurrentMaster = ref(false);

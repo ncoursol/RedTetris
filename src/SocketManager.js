@@ -90,7 +90,6 @@ class SocketManager {
 
     set_room_state(roomName, roomState) {
         if (!this.active_rooms[roomName]) return;
-        if (roomState !== "waiting" && roomState !== "playing") return;
         this.active_rooms[roomName].state = roomState;
     }
 
