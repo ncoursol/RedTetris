@@ -23,13 +23,6 @@
             <div class="opponentsGrid">
                 <TetrisGrid :isMainGrid="false" />
                 <TetrisGrid :isMainGrid="false" />
-                <TetrisGrid :isMainGrid="false" />
-                <TetrisGrid :isMainGrid="false" />
-                <TetrisGrid :isMainGrid="false" />
-                <TetrisGrid :isMainGrid="false" />
-                <TetrisGrid :isMainGrid="false" />
-                <TetrisGrid :isMainGrid="false" />
-                <TetrisGrid :isMainGrid="false" />
             </div>
         </div>
     </div>
@@ -47,7 +40,7 @@
     margin-top: 20px;
     gap: 20px;
     background-color: aqua;
-    max-height: 50vh;
+    height: 50vh;
 }
 
 .myGrid {
