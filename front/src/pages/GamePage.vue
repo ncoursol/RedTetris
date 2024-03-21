@@ -21,8 +21,30 @@
             </div>
             <!-- opponents' grids, between 1 and 9 -->
             <div class="opponentsGrid">
-                <TetrisGrid :isMainGrid="false" />
-                <TetrisGrid :isMainGrid="false" />
+                <div class="opponentsGrid-ctn">
+                    <TetrisGrid :isMainGrid="false" />
+                </div>
+                <div class="opponentsGrid-ctn">
+                    <TetrisGrid :isMainGrid="false" />
+                </div>
+                <div class="opponentsGrid-ctn">
+                    <TetrisGrid :isMainGrid="false" />
+                </div>
+                <div class="opponentsGrid-ctn">
+                    <TetrisGrid :isMainGrid="false" />
+                </div>
+                <div class="opponentsGrid-ctn">
+                    <TetrisGrid :isMainGrid="false" />
+                </div>
+                <div class="opponentsGrid-ctn">
+                    <TetrisGrid :isMainGrid="false" />
+                </div>
+                <div class="opponentsGrid-ctn">
+                    <TetrisGrid :isMainGrid="false" />
+                </div>
+                <div class="opponentsGrid-ctn">
+                    <TetrisGrid :isMainGrid="false" />
+                </div>
             </div>
         </div>
     </div>
@@ -40,7 +62,7 @@
     margin-top: 20px;
     gap: 20px;
     background-color: aqua;
-    height: 50vh;
+    height: 70vh;
 }
 
 .myGrid {
@@ -49,6 +71,10 @@
     justify-content: center;
     align-items: center;
     max-width: 50%;
+}
+
+.opponentsGrid-ctn {
+    height: 270px;
 }
 
 .opponentsGrid {
