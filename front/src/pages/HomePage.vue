@@ -28,7 +28,7 @@
             <div class="joinBox">
                 <h1>Join Game</h1>
                 <hr />
-                <div v-if="roomsInfo.length" style="margin-bottom: 10px">
+                <div v-if="roomsInfo" style="margin-bottom: 10px">
                     <h3>Username</h3>
                     <input
                         type="text"
@@ -37,9 +37,9 @@
                     />
                 </div>
             </div>
-            <div v-if="roomsInfo.length" class="cardsList">
+            <div v-if="roomsInfo" class="cardsList">
                 <div
-                    v-for="(room, index) in roomsInfo"
+                    v-for="(room, roomName, index) in roomsInfo"
                     :key="index"
                     class="card"
                     :style="{
@@ -47,16 +47,16 @@
                     }"
                 >
                     <span>
-                        <h1 class="overflowHandler">{{ room.roomName }}</h1>
+                        <h1 class="overflowHandler">{{ roomName }}</h1>
                     </span>
                     <h2 style="margin-bottom: 5px; margin-top: 10px">
-                        {{ room.players.length }} player{{
-                            room.players.length > 1 ? "s" : ""
+                        {{ Object.keys(room.players).length }} player{{
+                            Object.keys(room.players).length > 1 ? "s" : ""
                         }}
                     </h2>
                     <div class="playerList">
                         <div
-                            v-for="(player, playerIndex) in room.players"
+                            v-for="(player, playerId, playerIndex) in room.players"
                             :key="playerIndex"
                             class="playerLine"
                         >
@@ -73,7 +73,7 @@
                                 {{
                                     player.username
                                         ? player.username
-                                        : player.playerId
+                                        : playerId
                                 }}
                             </div>
                         </div>
@@ -81,7 +81,7 @@
                     <div
                         v-if="room.state === 'waiting'"
                         class="createBtn"
-                        @click="joinRoom(room.roomName, usernameJoin, 'join')"
+                        @click="joinRoom(roomName, usernameJoin, 'join')"
                     >
                         <h1>JOIN</h1>
                     </div>

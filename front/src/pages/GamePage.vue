@@ -46,7 +46,7 @@ export default defineComponent({
         const handleRoomsInfo = (rooms) => {
             roomsInfo.value = rooms;
             //console.log(roomsInfo.value);
-            isCurrentMaster.value = rooms.players[0].playerId === socket.id;
+            isCurrentMaster.value = rooms.players[Object.keys(rooms.players)[0]].playerId === socket.id;
         };
 
         const handleBeforeUnload = () => {

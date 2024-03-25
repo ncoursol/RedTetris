@@ -20,7 +20,7 @@ const io = new Server(server, {
 });
 
 const manager = new SocketManager();
-//manager.verbose = true;
+manager.verbose = true;
 
 const sessionStorage = new Map();
 
@@ -39,7 +39,7 @@ io.use((socket, next) => {
 });
 
 io.on("connection", (socket) => {
-    manager.add_player(socket.id, socket);
+    manager.add_player(socket.id, LOBBY_ROOM);
     socket.join(LOBBY_ROOM);
 
     socket.emit("session", {
@@ -49,8 +49,8 @@ io.on("connection", (socket) => {
     socket.on("leave-room", () => {
         roomName = manager.get_player_room(socket.id);
         if (!roomName) return;
-        manager.remove_player_from_room(roomName, socket.id);
-        socket.to(roomName).emit("rooms-info", manager.get_room_info(roomName));
+        manager.remove_player_from_room(roomName, socket.id, LOBBY_ROOM);
+        socket.to(roomName).emit("rooms-info", manager.get_rooms_info(roomName));
         socket.leave(roomName);
         socket.join(LOBBY_ROOM);
         socket.to(LOBBY_ROOM).emit("rooms-info", manager.get_rooms_info());
@@ -69,6 +69,10 @@ io.on("connection", (socket) => {
             callback("Username cannot be empty");
         } else if (username.length > 20) {
             callback("Username cannot be longer than 20 characters");
+        } else if (username.includes(" ")) {
+            callback("Username or room name cannot contain spaces");
+        } else if (username.length < 3) {
+            callback("Username must be at least 3 characters long");
         } else {
             manager.add_room(roomName);
             manager.add_player_to_room(roomName, socket.id, username);
@@ -77,9 +81,18 @@ io.on("connection", (socket) => {
             socket.join(roomName);
             socket
                 .to(roomName)
-                .emit("rooms-info", manager.get_room_info(roomName));
+                .emit("rooms-info", manager.get_rooms_info(roomName));
             callback("");
         }
+    });
+
+    socket.on("move", (roomName, move) => {
+        if (move != 'up' && move != 'down' && move != 'left' && move != 'right' && move != 'space') {
+            return;
+        }
+        // call piece move function/object here
+        grid = [];
+        socket.to(roomName).emit("grids", grid, socket.id);
     });
 
     socket.on("room-state", (roomName, roomState) => {
@@ -93,7 +106,7 @@ io.on("connection", (socket) => {
         if (roomState == "waiting" || roomState == "playing") {
             socket.to(LOBBY_ROOM).emit("rooms-info", manager.get_rooms_info());
         }
-        io.to(roomName).emit("rooms-info", manager.get_room_info(roomName));
+        io.to(roomName).emit("rooms-info", manager.get_rooms_info(roomName));
     });
 
     socket.on("delete-room", (roomName) => {
@@ -104,7 +117,7 @@ io.on("connection", (socket) => {
         if (roomName) {
             io.to(socket.id).emit(
                 "rooms-info",
-                manager.get_room_info(roomName)
+                manager.get_rooms_info(roomName)
             );
         } else {
             io.to(socket.id).emit("rooms-info", manager.get_rooms_info());
