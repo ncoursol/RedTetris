@@ -123,6 +123,19 @@ io.on("connection", (socket) => {
             io.to(socket.id).emit("rooms-info", manager.get_rooms_info());
         }
     });
+    socket.on("get-room-player-count", (roomName, callback) => {
+        io.in(roomName).allSockets().then((sockets) => {
+            const playerCount = sockets.size;
+            callback(playerCount);
+        }).catch((error) => {
+            console.error("Error getting room player count:", error);
+            callback("Error");
+        });
+    });
+
+    socket.on("key-press", (key) => {
+        console.log(`Touche pressée: ${key}`);
+    });
 });
 
 app.use(express.static(path.join(__dirname, "dist")));
@@ -130,16 +143,16 @@ app.use(express.static(path.join(__dirname, "dist")));
 app.get("/checkRoom/:room/:player_name", (req, res) => {
     const roomName = req.params.room;
     const playerName = req.params.player_name;
-    
+
     if (!manager.active_rooms[roomName]) {
         return res.status(404).send("Room does not exist");
     }
-    
+
     const playerRoom = manager.get_player_room_by_username(playerName);
     if (playerRoom !== roomName) {
         return res.status(403).send("Player is not in the room");
-    } 
-    res.status(200).send("Room and player verified"); 
+    }
+    res.status(200).send("Room and player verified");
 });
 
 app.get("*", (req, res) => {
