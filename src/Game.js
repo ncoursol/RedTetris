@@ -39,6 +39,7 @@ class Game {
     }
 
     tick() {
+        console.log("tick", this.gameDuration, this.level);
         // piece fall down by 1 block
     }
 }
