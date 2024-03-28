@@ -74,7 +74,6 @@
 	justify-content: center;
 	margin-top: 20px;
 	gap: 20px;
-	background-color: aqua;
 	height: 70vh;
 }
 
