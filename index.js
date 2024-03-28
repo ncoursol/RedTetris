@@ -20,7 +20,7 @@ const io = new Server(server, {
 });
 
 const manager = new SocketManager();
-manager.verbose = true;
+//manager.verbose = true;
 
 const sessionStorage = new Map();
 

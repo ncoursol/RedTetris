@@ -24,7 +24,7 @@ export default defineComponent({
     const updateSize = () => {
       if (tetrisGrid.value) {
         gridSize.width = tetrisGrid.value.offsetWidth;
-        gridSize.height = tetrisGrid.value.offsetHeight;
+        gridSize.height = tetrisGrid.value.offsetHeight - 23;
       }
     };
     let resizeObserver;
@@ -73,10 +73,9 @@ export default defineComponent({
 
 <style scoped>
 .tetris-grid {
-  display: flex;
-  flex-direction: column;
-  border: 1px solid #ff0000;
-  box-sizing: border-box;
+  border: 1px solid #0000ff;
+  border-top: 2px solid #0000ff;
+  border-left: 2px solid #0000ff;
   height: 100%;
 }
 
@@ -85,8 +84,7 @@ export default defineComponent({
 }
 
 .tetris-cell {
-  border: 1px solid #0000ff;
-  box-sizing: border-box;
-
+  border-bottom: 1px solid #0000ff;
+  border-right: 1px solid #0000ff;
 }
 </style>

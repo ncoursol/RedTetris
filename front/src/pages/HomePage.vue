@@ -259,26 +259,8 @@ export default defineComponent({
         };
 
         onMounted(() => {
-            socket.on('connect', () => {
-                console.log('Connecté au serveur Socket.io');
-            }); socket.on('connect_error', (error) => {
-                console.log(`Erreur de connexion : ${error}`);
-            });
             socket.on("rooms-info", handleRoomsInfo);
             socket.emit("get-rooms", "");
-            socket.emit("get-room-player-count", "roomName", (playerCount) => {
-                console.log(`Il y a ${playerCount} joueur(s) dans la room.`);
-            });
-
-            const handleKeyPress = (event) => {
-                const key = event.key;
-                const allowedKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '];
-
-                if (allowedKeys.includes(key)) {
-                    socket.emit('key-press', key);
-                }
-            };
-            window.addEventListener('keydown', handleKeyPress);
         });
 
 
