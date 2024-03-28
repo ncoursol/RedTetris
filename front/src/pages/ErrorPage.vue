@@ -1,14 +1,16 @@
 <template>
-    <div class="error-page">
-        <h1>404 Error</h1>
-        <p>Oops! The page you're looking for doesn't exist.</p>
+    <div class="errorPage">
+        <h1>{{ status }} Error</h1>
+        <p>{{ message }}</p>
     </div>
 </template>
 
 <style scoped>
-.error-page {
+.errorPage {
     text-align: center;
-    margin-top: 100px;
+    padding-top: 100px;
+    background-color: white;
+    color: black;
 }
 
 h1 {
@@ -21,3 +23,13 @@ p {
     color: #333333;
 }
 </style>
+
+<script>
+export default {
+    name: "ErrorPage",
+    props: {
+        status: Number,
+        message: String,
+    },
+};
+</script>

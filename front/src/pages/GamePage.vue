@@ -134,17 +134,15 @@ export default defineComponent({
 			socket.emit('room-state', props.room, actionType);
 		};
 
-		onMounted(() => {
-			socket.on('rooms-info', handleRoomsInfo);
-			socket.emit('get-rooms', props.room);
-			window.addEventListener('beforeunload', handleBeforeUnload);
-		});
+        onMounted(() => {
+            socket.on("rooms-info", handleRoomsInfo);
+            socket.emit("get-rooms", props.room);
+        });
 
-		onUnmounted(() => {
-			socket.off('rooms-info', handleRoomsInfo);
-			handleBeforeUnload();
-			window.removeEventListener('beforeunload', handleBeforeUnload);
-		});
+        onUnmounted(() => {
+            socket.off("rooms-info", handleRoomsInfo);
+            handleBeforeUnload();
+        });
 
 		return {
 			roomsInfo,

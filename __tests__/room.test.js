@@ -16,11 +16,11 @@ describe("Room", function () {
             expect(manager.players).toEqual({});
         });
         it("should add a player to the players object", function () {
-            manager.add_player(player1, "socket");
+            manager.add_player(player1, "lobby");
             expect(manager.players).toHaveProperty(player1);
         });
         it("should not add a player to the players object if they already exist", function () {
-            manager.add_player(player1, "socket");
+            manager.add_player(player1, "lobby");
             expect(manager.players).toHaveProperty(player1);
             expect(Object.keys(manager.players).length).toEqual(1);
         });
@@ -34,11 +34,15 @@ describe("Room", function () {
         it("should add a room to the active_rooms object", function () {
             manager.add_room(room1);
             expect(manager.active_rooms).toHaveProperty(room1);
-            expect(manager.active_rooms[room1].length).toEqual(0);
+            expect(manager.active_rooms[room1]).toHaveProperty("state");
+            expect(manager.active_rooms[room1].state).toEqual("waiting");
+            expect(manager.active_rooms[room1]).toHaveProperty("players");
+            expect(manager.active_rooms[room1].players).toEqual({});
         });
         it("should not add a room to the active_rooms object if it already exists", function () {
             manager.add_room(room1);
-            expect(manager.active_rooms[room1].length).toEqual(0);
+            expect(manager.active_rooms[room1]).toHaveProperty("players");
+            expect(manager.active_rooms[room1].players).toEqual({});
             expect(Object.keys(manager.active_rooms).length).toEqual(1);
         });
         it("should add a second room to the active_rooms object", function () {
@@ -51,7 +55,7 @@ describe("Room", function () {
     describe("remove_room", function () {
         beforeAll(function () {
             manager = new SocketManager();
-            manager.add_player(player1, "socket");
+            manager.add_player(player1, "lobby");
             manager.add_room(room1);
             manager.add_room(room2);
         });
@@ -71,42 +75,43 @@ describe("Room", function () {
     describe("add_player_to_room", function () {
         beforeAll(function () {
             manager = new SocketManager();
-            manager.add_player(player1, "socket");
-            manager.add_player(player2, "socket");
+            manager.add_player(player1, "lobby");
+            manager.add_player(player2, "lobby");
             manager.add_room(room1);
         });
         it("should add a player to a room", function () {
             manager.add_player_to_room(room1, player1);
-            expect(manager.active_rooms[room1]).toContain(player1);
+            expect(manager.active_rooms[room1].players).toHaveProperty(player1);
         });
         it("should not add a player to a room if they are already in it", function () {
             manager.add_player_to_room(room1, player1);
-            expect(manager.active_rooms[room1].length).toEqual(1);
+            expect(manager.active_rooms[room1].players).toHaveProperty(player1);
+            expect(Object.keys(manager.active_rooms[room1].players).length).toEqual(1);
         });
         it("should add a second player to a room", function () {
             manager.add_player_to_room(room1, player2);
-            expect(manager.active_rooms[room1]).toContain(player2);
-            expect(manager.active_rooms[room1].length).toEqual(2);
+            expect(manager.active_rooms[room1].players).toHaveProperty(player2);
+            expect(Object.keys(manager.active_rooms[room1].players).length).toEqual(2);
         });
     });
 
     describe("remove_player_from_room", function () {
         beforeAll(function () {
             manager = new SocketManager();
-            manager.add_player(player1, "socket");
-            manager.add_player(player2, "socket");
+            manager.add_player(player1, "lobby");
+            manager.add_player(player2, "lobby");
             manager.add_room(room1);
             manager.add_player_to_room(room1, player1);
             manager.add_player_to_room(room1, player2);
         });
         it("should remove a player from a room", function () {
             manager.remove_player_from_room(room1, player1);
-            expect(manager.active_rooms[room1]).not.toContain(player1);
-            expect(manager.active_rooms[room1].length).toEqual(1);
+            expect(manager.active_rooms[room1].players).not.toContain(player1);
+            expect(Object.keys(manager.active_rooms[room1].players).length).toEqual(1);
         });
         it("should not remove a player from a room if they are not in it", function () {
             manager.remove_player_from_room(room1, player1);
-            expect(manager.active_rooms[room1].length).toEqual(1);
+            expect(Object.keys(manager.active_rooms[room1].players).length).toEqual(1);
         });
         it("should remove the last player and the room", function () {
             manager.remove_player_from_room(room1, player2);
@@ -123,73 +128,98 @@ describe("Room", function () {
     describe("get_state", function () {
         beforeAll(function () {
             manager = new SocketManager();
-            manager.add_player(player1, "socket");
-            manager.add_player(player2, "socket");
+            manager.add_player(player1, "lobby");
+            manager.add_player(player2, "lobby");
             manager.add_room(room1);
             manager.add_player_to_room(room1, player1);
             manager.add_player_to_room(room1, player2);
         });
         it("should as waiting state by default", function () {
-            const info = manager.get_room_info(room1);
+            const info = manager.get_rooms_info(room1);
             expect(info.state).toEqual("waiting");
         });
         it("should change room state", function () {
             manager.set_room_state(room1, "playing");
-            const info = manager.get_room_info(room1);
+            const info = manager.get_rooms_info(room1);
             expect(info.state).toEqual("playing");
         });
         it("should not change room state if the room does not exist", function () {
             manager.set_room_state("non-existent-room", "playing");
-            const info = manager.get_room_info("non-existent-room");
-            expect(info).toBeUndefined();
-        });
-        it("should not change room state if the state is not playing or wainting", function () {
-            manager.set_room_state(room1, "non-existent-state");
-            const info = manager.get_room_info(room1);
-            expect(info.state).toEqual("playing");
+            const info = manager.get_rooms_info("non-existent-room");
+            expect(info).toBeNull();
         });
     });
 
     describe("get_info", function () {
         beforeAll(function () {
             manager = new SocketManager();
-            manager.add_player(player1, "socket");
-            manager.add_player(player2, "socket");
+            manager.add_player(player1, "lobby");
+            manager.add_player(player2, "lobby");
             manager.add_room(room1);
-            manager.add_room(room2); // should be removed by get_room_info cause no players
+            manager.add_room(room2);
             manager.add_player_to_room(room1, player1);
             manager.add_player_to_room(room1, player2);
         });
         it("should return an array of room objects", function () {
             const roomsInfo = manager.get_rooms_info();
-            expect(roomsInfo).toBeInstanceOf(Array);
-            expect(roomsInfo.length).toEqual(1);
-            expect(roomsInfo[0]).toHaveProperty("roomName");
-            expect(roomsInfo[0]).toHaveProperty("players");
-            expect(roomsInfo[0].players.length).toEqual(2);
+            expect(roomsInfo).toBeInstanceOf(Object)
+            expect(Object.keys(roomsInfo).length).toEqual(2);
+            expect(Object.keys(roomsInfo)[0]).toEqual(room1);
+            expect(Object.keys(roomsInfo)[0]).toContain(room1);
+            expect(Object.keys(roomsInfo)[1]).toEqual(room2);
+            expect(Object.keys(roomsInfo)[1]).toContain(room2);
+            expect(Object.keys(roomsInfo[room1].players).length).toEqual(2);
         });
         it("should return a room object", function () {
-            const roomInfo = manager.get_room_info(room1);
-            expect(roomInfo).toHaveProperty("roomName");
+            const roomInfo = manager.get_rooms_info(room1);
+            expect(roomInfo).toHaveProperty("state");
             expect(roomInfo).toHaveProperty("players");
+            expect(roomInfo.players).toHaveProperty(player1);
+            expect(roomInfo.players).toHaveProperty(player2);
         });
-        it("should return undefined if the room does not exist", function () {
-            const roomInfo = manager.get_room_info("non-existent-room");
-            expect(roomInfo).toBeUndefined();
+        it("should return null if the room does not exist", function () {
+            const roomInfo = manager.get_rooms_info("non-existent-room");
+            expect(roomInfo).toBeNull();
         });
         it("should return the room of a player", function () {
             const roomName = manager.get_player_room(player1);
             expect(roomName).toEqual(room1);
         });
-        it("should return undefined if there are no room", function () {
+        it("should return null if there are no room", function () {
             manager = new SocketManager();
-            const roomInfo = manager.get_room_info(room1);
-            expect(roomInfo).toBeUndefined();
+            const roomInfo = manager.get_rooms_info(room1);
+            expect(roomInfo).toBeNull();
         });
-        it("should return an empty array if there are no rooms", function () {
+    });
+
+    describe("get_player_room", function () {
+        beforeAll(function () {
             manager = new SocketManager();
-            const roomName = manager.get_rooms_info();
-            expect(roomName).toEqual([]);
+            manager.add_player(player1, "lobby");
+            manager.add_player(player2, "lobby");
+            manager.add_room(room1);
+            manager.add_player_to_room(room1, player1, 'player1');
+            manager.add_player_to_room(room1, player2, 'player2');
+        });
+        it("should return the room of a player", function () {
+            const roomName = manager.get_player_room(player1);
+            expect(roomName).toEqual(room1);
+            const roomName2 = manager.get_player_room(player2);
+            expect(roomName2).toEqual(room1);
+        });
+        it("should return null if the player does not exist", function () {
+            const roomName = manager.get_player_room("non-existent-player");
+            expect(roomName).toBeNull();
+        });
+        it("should return the room of a player by username", function () {
+            const roomName = manager.get_player_room_by_username('player1');
+            expect(roomName).toEqual(room1);
+            const roomName2 = manager.get_player_room_by_username('player2');
+            expect(roomName2).toEqual(room1);
+        });
+        it("should return null if the player does not exist", function () {
+            const roomName = manager.get_player_room_by_username("non-existent-player");
+            expect(roomName).toBeNull();
         });
     });
 
