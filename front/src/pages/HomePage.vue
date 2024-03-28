@@ -60,7 +60,12 @@
                             </div>
                         </div>
                     </div>
-                    <div v-if="room.state === 'waiting'" class="createBtn"
+                    <div
+                        v-if="room.state === 'stop'"
+                        class="createBtn"
+                        @click="joinRoom(roomName, usernameJoin, 'join')"
+                    >
+                    <div v-if="room.state === 'stop'" class="createBtn"
                         @click="joinRoom(roomName, usernameJoin, 'join')">
                         <h1>JOIN</h1>
                     </div>

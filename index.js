@@ -50,7 +50,9 @@ io.on("connection", (socket) => {
         roomName = manager.get_player_room(socket.id);
         if (!roomName) return;
         manager.remove_player_from_room(roomName, socket.id, LOBBY_ROOM);
-        socket.to(roomName).emit("rooms-info", manager.get_rooms_info(roomName));
+        socket
+            .to(roomName)
+            .emit("rooms-info", manager.get_rooms_info(roomName));
         socket.leave(roomName);
         socket.join(LOBBY_ROOM);
         socket.to(LOBBY_ROOM).emit("rooms-info", manager.get_rooms_info());
@@ -87,7 +89,13 @@ io.on("connection", (socket) => {
     });
 
     socket.on("move", (roomName, move) => {
-        if (move != 'up' && move != 'down' && move != 'left' && move != 'right' && move != 'space') {
+        if (
+            move != "up" &&
+            move != "down" &&
+            move != "left" &&
+            move != "right" &&
+            move != "space"
+        ) {
             return;
         }
         // call piece move function/object here
@@ -103,10 +111,17 @@ io.on("connection", (socket) => {
         )
             return;
         manager.set_room_state(roomName, roomState);
-        if (roomState == "waiting" || roomState == "playing") {
+        if (roomState == "stop" || roomState == "start") {
             socket.to(LOBBY_ROOM).emit("rooms-info", manager.get_rooms_info());
         }
         io.to(roomName).emit("rooms-info", manager.get_rooms_info(roomName));
+        if (roomState == "start") {
+            manager.active_rooms[roomName].game.start();
+        } else if (roomState == "stop") {
+            manager.active_rooms[roomName].game.stop();
+        } else if (roomState == "pause") {
+            manager.active_rooms[roomName].game.pause();
+        }
     });
 
     socket.on("delete-room", (roomName) => {

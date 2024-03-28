@@ -3,16 +3,16 @@
         <div v-if="isCurrentMaster">
             <Button
                 buttonText="Start Game"
-                actionType="playing"
+                actionType="start"
                 @action="setState"
             />
             <Button
-                buttonText="Waiting for player"
-                actionType="waiting"
+                buttonText="Stop Game"
+                actionType="stop"
                 @action="setState"
             />
             <Button
-                buttonText="pause the game"
+                buttonText="Pause game"
                 actionType="pause"
                 @action="setState"
             />
