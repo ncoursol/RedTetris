@@ -5,6 +5,7 @@ class SocketManager {
     constructor() {
         this.active_rooms = {};
         this.players = {};
+        this.games = {};
         this.verbose = false;
     }
 
@@ -30,6 +31,7 @@ class SocketManager {
 
     remove_room(roomName) {
         delete this.active_rooms[roomName];
+        delete this.games[roomName];
         this.logSocket(`Room ${roomName} removed`);
     }
 

@@ -51,7 +51,9 @@ io.on("connection", (socket) => {
         roomName = manager.get_player_room(socket.id);
         if (!roomName) return;
         manager.remove_player_from_room(roomName, socket.id, LOBBY_ROOM);
-        socket.to(roomName).emit("rooms-info", manager.get_rooms_info(roomName));
+        socket
+            .to(roomName)
+            .emit("rooms-info", manager.get_rooms_info(roomName));
         socket.leave(roomName);
         socket.join(LOBBY_ROOM);
         socket.to(LOBBY_ROOM).emit("rooms-info", manager.get_rooms_info());
@@ -88,7 +90,13 @@ io.on("connection", (socket) => {
     });
 
     socket.on("move", (roomName, move) => {
-        if (move != 'up' && move != 'down' && move != 'left' && move != 'right' && move != 'space') {
+        if (
+            move != "up" &&
+            move != "down" &&
+            move != "left" &&
+            move != "right" &&
+            move != "space"
+        ) {
             return;
         }
         // call piece move function/object here
@@ -107,14 +115,14 @@ io.on("connection", (socket) => {
         if (roomState == "stop" || roomState == "start") {
             socket.to(LOBBY_ROOM).emit("rooms-info", manager.get_rooms_info());
         }
-        socket.to(roomName).emit("rooms-info", manager.get_rooms_info(roomName));
+        io.to(roomName).emit("rooms-info", manager.get_rooms_info(roomName));
         if (roomState == "start") {
             manager.active_rooms[roomName].game.start();
-        } /*else if (roomState == "stop") {
+        } else if (roomState == "stop") {
             manager.active_rooms[roomName].game.stop();
         } else if (roomState == "pause") {
             manager.active_rooms[roomName].game.pause();
-        } */
+        }
     });
 
     socket.on("delete-room", (roomName) => {
@@ -138,16 +146,16 @@ app.use(express.static(path.join(__dirname, "dist")));
 app.get("/checkRoom/:room/:player_name", (req, res) => {
     const roomName = req.params.room;
     const playerName = req.params.player_name;
-    
+
     if (!manager.active_rooms[roomName]) {
         return res.status(404).send("Room does not exist");
     }
-    
+
     const playerRoom = manager.get_player_room_by_username(playerName);
     if (playerRoom !== roomName) {
         return res.status(403).send("Player is not in the room");
-    } 
-    res.status(200).send("Room and player verified"); 
+    }
+    res.status(200).send("Room and player verified");
 });
 
 app.get("*", (req, res) => {
