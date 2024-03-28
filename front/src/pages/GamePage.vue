@@ -1,11 +1,23 @@
 <template>
     <div class="gamePage">
         <div v-if="isCurrentMaster">
-            <button @click="setState('start')">Start Game</button>
-            <button @click="setState('stop')">Stop Game</button>
-            <button @click="setState('pause')">Pause Game</button>
+            <Button
+                buttonText="Start Game"
+                actionType="start"
+                @action="setState"
+            />
+            <Button
+                buttonText="Stop Game"
+                actionType="stop"
+                @action="setState"
+            />
+            <Button
+                buttonText="Pause game"
+                actionType="pause"
+                @action="setState"
+            />
         </div>
-        {{ roomsInfo.state }}
+
         <h1>Room: {{ room }}</h1>
         <h2>Player ID: {{ player_name }}</h2>
         <div v-for="(player, index) in roomsInfo.players" :key="index">
@@ -15,7 +27,16 @@
                 {{ player.username ? player.username : player.playerId }}
             </h3>
         </div>
-        <TetrisGrid />
+        <div class="grid-ctn">
+            <div class="myGrid">
+                <TetrisGrid :isMainGrid="true" />
+            </div>
+			<div class="opponentsGrid">
+				<div v-for="(player, index) in roomsInfo.players" :key="index" class="opponentsGrid-ctn">
+					<TetrisGrid v-if="player.username !== player_name" :isMainGrid="false" />
+				</div>
+			</div>
+        </div>
     </div>
 </template>
 
@@ -24,21 +45,53 @@
     background-color: white;
     color: black;
 }
+
+.grid-ctn {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    gap: 20px;
+    height: 70vh;
+}
+
+.myGrid {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    max-width: 50%;
+}
+
+.opponentsGrid-ctn {
+    height: 270px;
+}
+
+.opponentsGrid {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    /* justify-content: space-around; */
+    max-width: 50%;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 5px;
+}
 </style>
 
 <script>
 import { defineComponent, onMounted, onUnmounted, ref } from "vue";
 import TetrisGrid from "../components/TetrisGrid.vue";
 import { useSocket } from "@/plugins/socket";
+import Button from "../components/Button.vue";
 
 export default defineComponent({
     props: ["room", "player_name"],
     name: "GamePage",
     components: {
+        Button,
         TetrisGrid,
     },
     setup(props) {
-        
         const { socket } = useSocket();
         const roomsInfo = ref([]);
         const isCurrentMaster = ref(false);
@@ -46,15 +99,15 @@ export default defineComponent({
         const handleRoomsInfo = (rooms) => {
             roomsInfo.value = rooms;
             //console.log(roomsInfo.value);
-            isCurrentMaster.value = rooms.players[Object.keys(rooms.players)[0]].playerId === socket.id;
+			isCurrentMaster.value = rooms.players[Object.keys(rooms.players)[0]].playerId === socket.id;
         };
 
         const handleBeforeUnload = () => {
             socket.emit("leave-room");
         };
 
-        const setState = (state) => {
-            socket.emit("room-state", props.room, state);
+        const setState = (actionType) => {
+            socket.emit("room-state", props.room, actionType);
         };
 
         onMounted(() => {

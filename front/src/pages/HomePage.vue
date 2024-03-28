@@ -13,10 +13,7 @@
                 <input type="text" v-model="username" />
                 <h3>Room name</h3>
                 <input type="text" v-model="roomName" />
-                <div
-                    class="createBtn"
-                    @click="joinRoom(roomName, username, 'create')"
-                >
+                <div class="createBtn" @click="joinRoom(roomName, username, 'create')">
                     <h1>CREATE</h1>
                 </div>
             </div>
@@ -30,22 +27,13 @@
                 <hr />
                 <div v-if="roomsInfo" style="margin-bottom: 10px">
                     <h3>Username</h3>
-                    <input
-                        type="text"
-                        style="max-width: 290px"
-                        v-model="usernameJoin"
-                    />
+                    <input type="text" style="max-width: 290px" v-model="usernameJoin" />
                 </div>
             </div>
             <div v-if="roomsInfo" class="cardsList">
-                <div
-                    v-for="(room, roomName, index) in roomsInfo"
-                    :key="index"
-                    class="card"
-                    :style="{
-                        backgroundColor: colors[index % colors.length],
-                    }"
-                >
+                <div v-for="(room, roomName, index) in roomsInfo" :key="index" class="card" :style="{
+                    backgroundColor: colors[index % colors.length],
+                }">
                     <span>
                         <h1 class="overflowHandler">{{ roomName }}</h1>
                     </span>
@@ -55,25 +43,19 @@
                         }}
                     </h2>
                     <div class="playerList">
-                        <div
-                            v-for="(player, playerId, playerIndex) in room.players"
-                            :key="playerIndex"
-                            class="playerLine"
-                        >
-                            <div
-                                style="
+                        <div v-for="(player, playerId, playerIndex) in room.players" :key="playerIndex" class="playerLine">
+                            <div style="
                                     font-size: 20px;
                                     font-weight: bold;
                                     margin-right: 15px;
-                                "
-                            >
+                                ">
                                 P{{ playerIndex + 1 }}
                             </div>
                             <div class="overflowHandler" style="font-size: x-large;">
                                 {{
                                     player.username
-                                        ? player.username
-                                        : playerId
+                                    ? player.username
+                                    : playerId
                                 }}
                             </div>
                         </div>
@@ -83,6 +65,8 @@
                         class="createBtn"
                         @click="joinRoom(roomName, usernameJoin, 'join')"
                     >
+                    <div v-if="room.state === 'stop'" class="createBtn"
+                        @click="joinRoom(roomName, usernameJoin, 'join')">
                         <h1>JOIN</h1>
                     </div>
                     <div v-else>
@@ -108,6 +92,7 @@
     border-bottom: 2px solid black;
     scrollbar-color: black rgba(255, 255, 255, 0);
 }
+
 .inGameMsg {
     position: absolute;
     font-size: x-large;
@@ -115,10 +100,12 @@
     font-style: italic;
     margin: 0px;
 }
+
 .playerLine {
     display: flex;
     align-items: center;
 }
+
 .createBtn {
     bottom: -3px;
     right: -3px;
@@ -131,21 +118,25 @@
     justify-content: center;
     align-items: center;
 }
+
 .createBtn h1 {
     margin: 20px;
     margin-top: 10px;
     margin-bottom: 10px;
 }
+
 .createBtn:hover {
     background-color: black;
     color: white;
 }
+
 .createBox {
     display: flex;
     padding-top: 4vw;
     flex-direction: column;
     align-items: center;
 }
+
 .errorBox {
     padding: 10px;
     margin: 10px;
@@ -156,26 +147,31 @@
     font-weight: bold;
     text-align: center;
 }
+
 input {
     width: 97%;
     height: 30px;
     font-size: 20px;
 }
+
 .joinBox {
     margin-left: 30px;
     margin-right: 30px;
 }
+
 .cardsList {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
 }
+
 .overflowHandler {
     margin: 0px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
 }
+
 .card {
     position: relative;
     margin: 10px;
@@ -185,32 +181,39 @@ input {
     height: 292px;
     box-shadow: 5px 5px 5px #888888;
 }
+
 .homePage {
     background-color: white;
     color: black;
 }
+
 .mainTitle {
     justify-content: center;
     display: flex;
 }
+
 .titleGif {
     min-width: 310px;
     max-width: 1200px;
     width: 80%;
 }
+
 @media (max-width: 770px) {
     .titleGif {
         width: 100%;
     }
 }
+
 @media (max-width: 550px) {
     .mainTitle {
         display: none;
     }
+
     .joinBox {
         margin-left: 14px;
         margin-right: 14px;
     }
+
     .card {
         margin-left: 0px;
         margin-right: 0px;
@@ -264,6 +267,7 @@ export default defineComponent({
             socket.on("rooms-info", handleRoomsInfo);
             socket.emit("get-rooms", "");
         });
+
 
         onUnmounted(() => {
             socket.off("rooms-info", handleRoomsInfo);
