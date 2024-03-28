@@ -79,7 +79,7 @@
                         </div>
                     </div>
                     <div
-                        v-if="room.state === 'waiting'"
+                        v-if="room.state === 'stop'"
                         class="createBtn"
                         @click="joinRoom(roomName, usernameJoin, 'join')"
                     >

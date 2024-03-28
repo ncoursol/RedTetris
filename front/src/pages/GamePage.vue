@@ -1,8 +1,8 @@
 <template>
     <div class="gamePage">
         <div v-if="isCurrentMaster">
-            <button @click="setState('playing')">Start Game</button>
-            <button @click="setState('waiting')">Stop Game</button>
+            <button @click="setState('start')">Start Game</button>
+            <button @click="setState('stop')">Stop Game</button>
             <button @click="setState('pause')">Pause Game</button>
         </div>
         {{ roomsInfo.state }}

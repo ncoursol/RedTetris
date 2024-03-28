@@ -20,7 +20,8 @@ const io = new Server(server, {
 });
 
 const manager = new SocketManager();
-manager.verbose = true;
+
+//manager.verbose = true;
 
 const sessionStorage = new Map();
 
@@ -103,10 +104,17 @@ io.on("connection", (socket) => {
         )
             return;
         manager.set_room_state(roomName, roomState);
-        if (roomState == "waiting" || roomState == "playing") {
+        if (roomState == "stop" || roomState == "start") {
             socket.to(LOBBY_ROOM).emit("rooms-info", manager.get_rooms_info());
         }
-        io.to(roomName).emit("rooms-info", manager.get_rooms_info(roomName));
+        socket.to(roomName).emit("rooms-info", manager.get_rooms_info(roomName));
+        if (roomState == "start") {
+            manager.active_rooms[roomName].game.start();
+        } /*else if (roomState == "stop") {
+            manager.active_rooms[roomName].game.stop();
+        } else if (roomState == "pause") {
+            manager.active_rooms[roomName].game.pause();
+        } */
     });
 
     socket.on("delete-room", (roomName) => {

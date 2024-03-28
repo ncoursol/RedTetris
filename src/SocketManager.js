@@ -1,4 +1,5 @@
 const Player = require("./Player");
+const Game = require("./Game");
 
 class SocketManager {
     constructor() {
@@ -21,8 +22,9 @@ class SocketManager {
     add_room(roomName) {
         if (this.active_rooms[roomName]) return;
         this.active_rooms[roomName] = {};
-        this.active_rooms[roomName].state = "waiting";
+        this.active_rooms[roomName].state = "stop";
         this.active_rooms[roomName].players = {};
+        this.active_rooms[roomName].game = new Game();
         this.logSocket(`Room ${roomName} created`);
     }
 
@@ -56,7 +58,7 @@ class SocketManager {
         if (roomName) {
             return this.active_rooms[roomName] ? this.active_rooms[roomName] : null;
         }
-        return this.active_rooms
+        return this.active_rooms;
     }
 
     set_room_state(roomName, roomState) {
