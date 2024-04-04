@@ -12,7 +12,7 @@
                 RED TETRIS
             </div>
         </div>
-        <router-view />
+        <router-view class="content"/>
     </div>
 </template>
 
@@ -20,11 +20,17 @@
 .mainLayout {
     background-color: #2b2b2b;
     color: white;
+    display: flex;
+    flex-flow: column;
+    height: 100%;
 }
 .navBar {
+    flex: 0 1 72px;
     display: flex;
     align-items: center;
-    height: 72px;
+}
+.content {
+    flex: 1 1 auto;
 }
 .logo {
     width: 60px;
