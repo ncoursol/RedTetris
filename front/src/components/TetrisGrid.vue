@@ -81,8 +81,6 @@ export default defineComponent({
     border: 1px solid #0000ff;
     border-top: 2px solid #0000ff;
     border-left: 2px solid #0000ff;
-    display: grid;
-    grid-template-columns: repeat(10, 1fr);
     aspect-ratio: 1 / 2;
     position: absolute;
     top: 0;
@@ -97,6 +95,7 @@ export default defineComponent({
 
 .tetris-row {
     display: flex;
+    flex-direction: row;
 }
 
 .tetris-cell {

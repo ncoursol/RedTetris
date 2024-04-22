@@ -40,15 +40,8 @@
                 <TetrisGrid :isMainGrid="true" />
             </div>
             <div class="opponentsGrid">
-                <div
-                    v-for="(player, index) in roomsInfo.players"
-                    :key="index"
-                    class="opponentsGrid-ctn"
-                >
-                    <TetrisGrid
-                        v-if="player.username !== player_name"
-                        :isMainGrid="false"
-                    />
+                <div v-for="(player, index) in opponents" :key="index" class="opponentsGrid-ctn">
+                    <TetrisGrid :isMainGrid="false"/>
                 </div>
             </div>
         </div>
@@ -100,7 +93,7 @@
     flex: 1 1 auto;
     display: flex;
     justify-content: center;
-    gap: 20px;
+    gap: 10px;
     margin-bottom: 10px;
 }
 
@@ -110,19 +103,14 @@
 }
 
 .opponentsGrid-ctn {
-    height: 270px;
     position: relative;
 }
 
 .opponentsGrid {
     flex: 1;
-    display: flex;
-    flex-wrap: wrap;
-    /* justify-content: space-around; */
-    max-width: 50%;
-    justify-content: flex-start;
-    align-items: flex-start;
-    gap: 5px;
+    display: grid;
+    grid-gap: 5px;
+    margin-right: 5px;
 }
 </style>
 
@@ -144,13 +132,26 @@ export default defineComponent({
         const { socket } = useSocket();
         const roomsInfo = ref([]);
         const isCurrentMaster = ref(false);
+        const opponents = ref([]);
 
         const handleRoomsInfo = (rooms) => {
             roomsInfo.value = rooms;
             //console.log(roomsInfo.value);
+
             isCurrentMaster.value =
                 rooms.players[Object.keys(rooms.players)[0]].playerId ===
                 socket.id;
+
+            opponents.value = Object.values(rooms.players).filter(
+                (player) => player.playerId !== socket.id
+            );
+
+            const numberOfColumns = Math.ceil(
+                Math.sqrt(opponents.value.length)
+            );
+
+            const opponentContainer = document.querySelector(".opponentsGrid");
+            opponentContainer.style.gridTemplateColumns = `repeat(${numberOfColumns}, 1fr)`;
         };
 
         const handleBeforeUnload = () => {
@@ -177,6 +178,7 @@ export default defineComponent({
             setState,
             handleBeforeUnload,
             isCurrentMaster,
+            opponents,
         };
     },
 });
