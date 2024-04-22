@@ -138,19 +138,6 @@ io.on("connection", (socket) => {
             io.to(socket.id).emit("rooms-info", manager.get_rooms_info());
         }
     });
-    socket.on("get-room-player-count", (roomName, callback) => {
-        io.in(roomName).allSockets().then((sockets) => {
-            const playerCount = sockets.size;
-            callback(playerCount);
-        }).catch((error) => {
-            console.error("Error getting room player count:", error);
-            callback("Error");
-        });
-    });
-
-    socket.on("key-press", (key) => {
-        console.log(`Touche pressée: ${key}`);
-    });
 });
 
 app.use(express.static(path.join(__dirname, "dist")));

@@ -1,90 +1,107 @@
+<!-- <template>
+    <div class="tetris-grid">
+        <div
+            v-for="(cell, index) in grid"
+            :key="index"
+            class="tetris-cell"
+            :style="{ backgroundColor: cell }"
+        ></div>
+    </div>
+</template>
+
+<script>
+import { defineComponent, computed } from "vue";
+
+export default defineComponent({
+    name: "TetrisGrid",
+    setup() {
+        const grid = computed(() => {
+            let gridArray = [];
+            for (let j = 0; j < 200; j++) {
+                gridArray.push(
+                    `#${Math.floor(Math.random() * 16777215).toString(16)}`
+                );
+            }
+            return gridArray;
+        });
+
+        return {
+            grid,
+        };
+    },
+});
+</script> -->
+
 <template>
-  <div class="tetris-grid" ref="tetrisGrid">
-    <div v-for="row in grid" :key="row" class="tetris-row">
-      <div v-for="col in row" :key="col" class="tetris-cell"
-        :style="{ width: cellSize + 'px', height: cellSize + 'px', backgroundColor: col }">
-      </div>
+  <div class="tetris-grid">
+    <div
+      v-for="(row, rowIndex) in grid"
+      :key="rowIndex"
+      class="tetris-row"
+    >
+      <div
+        v-for="(cell, cellIndex) in row"
+        :key="cellIndex"
+        class="tetris-cell"
+        :style="{ backgroundColor: cell }"
+      ></div>
     </div>
   </div>
 </template>
 
 <script>
-import { defineComponent, ref, onMounted, onUnmounted, computed, reactive, watchEffect } from 'vue';
+import { defineComponent, computed } from "vue";
 
 export default defineComponent({
-  name: "TetrisGrid",
-  setup() {
-    const tetrisGrid = ref(null);
+    name: "TetrisGrid",
+    setup() {
+        const grid = computed(() => {
+            let gridArray = [];
+            for (let j = 0; j < 20; j++) {
+                let gridRow = [];
+                for (let i = 0; i < 10; i++) {
+                    gridRow.push(
+                        `#${Math.floor(Math.random() * 16777215).toString(16)}`
+                    );
+                }
+                gridArray.push(gridRow);
+            }
+            return gridArray;
+        });
 
-    const gridSize = reactive({
-      width: 0,
-      height: 0
-    });
-
-    const updateSize = () => {
-      if (tetrisGrid.value) {
-        gridSize.width = tetrisGrid.value.offsetWidth;
-        gridSize.height = tetrisGrid.value.offsetHeight - 23;
-      }
-    };
-    let resizeObserver;
-    onMounted(() => {
-      if (window.ResizeObserver) {
-        resizeObserver = new ResizeObserver(updateSize);
-        resizeObserver.observe(tetrisGrid.value);
-      }
-    });
-
-    onUnmounted(() => {
-      if (resizeObserver) {
-        resizeObserver.disconnect();
-      }
-    });
-
-    const cellSize = computed(() => {
-      return gridSize.height > 0 ? gridSize.height / 20 : 0;
-    });
-
-    watchEffect(() => {
-      updateSize();
-    });
-
-    const grid = computed(() => {
-      let gridArray = [];
-      for (let i = 0; i < 20; i++) {
-        let row = [];
-        for (let j = 0; j < 10; j++) {
-          row.push(`#${Math.floor(Math.random() * 16777215).toString(16)}`);
-        }
-        gridArray.push(row);
-      }
-      return gridArray;
-    });
-
-    return {
-      cellSize,
-      grid,
-      tetrisGrid
-    };
-  },
+        return {
+            grid,
+        };
+    },
 });
 </script>
 
-
 <style scoped>
 .tetris-grid {
-  border: 1px solid #0000ff;
-  border-top: 2px solid #0000ff;
-  border-left: 2px solid #0000ff;
-  height: 100%;
+    border: 1px solid #0000ff;
+    border-top: 2px solid #0000ff;
+    border-left: 2px solid #0000ff;
+    aspect-ratio: 1 / 2;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 100%;
+    max-height: 100%;
 }
 
 .tetris-row {
-  display: flex;
+    display: flex;
+    flex-direction: row;
 }
 
 .tetris-cell {
-  border-bottom: 1px solid #0000ff;
-  border-right: 1px solid #0000ff;
+    border-bottom: 1px solid #0000ff;
+    border-right: 1px solid #0000ff;
+    aspect-ratio: 1;
+    width: 100%;
 }
 </style>
