@@ -43,7 +43,7 @@ importers:
         specifier: ^29.7.0
         version: 29.7.0
 
-  packages/front:
+  front:
     dependencies:
       core-js:
         specifier: ^3.8.3

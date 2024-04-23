@@ -5,7 +5,7 @@
         </div>
         <div class="createBox">
             <div class="card" style="display: flex; flex-direction: column">
-                <h1 style="margin: 0px; text-align: center">
+                <h1 style="margin: 0px; text-align: center; font-size: 29px; font-weight: initial;">
                     Create a new game
                 </h1>
                 <h3 style="width: 100%">Username</h3>

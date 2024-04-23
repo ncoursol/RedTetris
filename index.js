@@ -100,7 +100,7 @@ io.on("connection", (socket) => {
         }
         // call piece move function/object here
         grid = [];
-        socket.to(roomName).emit("grids", grid, socket.id);
+        io.to(roomName).emit("grids", grid, socket.id);
     });
 
     socket.on("room-state", (roomName, roomState) => {
@@ -116,7 +116,7 @@ io.on("connection", (socket) => {
         }
         io.to(roomName).emit("rooms-info", manager.get_rooms_info(roomName));
         if (roomState == "start") {
-            manager.active_rooms[roomName].game.start();
+            manager.active_rooms[roomName].game.start(io, roomName);
         } else if (roomState == "stop") {
             manager.active_rooms[roomName].game.stop();
         } else if (roomState == "pause") {

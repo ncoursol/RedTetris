@@ -1,86 +1,50 @@
-<!-- <template>
+<template>
     <div class="tetris-grid">
         <div
-            v-for="(cell, index) in grid"
-            :key="index"
-            class="tetris-cell"
-            :style="{ backgroundColor: cell }"
-        ></div>
+            v-for="(row, rowIndex) in grid.slice(1)"
+            :key="rowIndex"
+            class="tetris-row"
+        >
+            <div
+                v-for="(cell, cellIndex) in row"
+                :key="cellIndex"
+                class="tetris-cell"
+                :style="{ backgroundColor: cell }"
+            ></div>
+        </div>
     </div>
 </template>
 
 <script>
-import { defineComponent, computed } from "vue";
+import { defineComponent } from "vue";
 
 export default defineComponent({
     name: "TetrisGrid",
-    setup() {
-        const grid = computed(() => {
-            let gridArray = [];
-            for (let j = 0; j < 200; j++) {
-                gridArray.push(
-                    `#${Math.floor(Math.random() * 16777215).toString(16)}`
-                );
-            }
-            return gridArray;
-        });
-
-        return {
-            grid,
-        };
+    props: {
+        grid: {
+            type: Array,
+            required: true,
+        },
     },
-});
-</script> -->
-
-<template>
-  <div class="tetris-grid">
-    <div
-      v-for="(row, rowIndex) in grid"
-      :key="rowIndex"
-      class="tetris-row"
-    >
-      <div
-        v-for="(cell, cellIndex) in row"
-        :key="cellIndex"
-        class="tetris-cell"
-        :style="{ backgroundColor: cell }"
-      ></div>
-    </div>
-  </div>
-</template>
-
-<script>
-import { defineComponent, computed } from "vue";
-
-export default defineComponent({
-    name: "TetrisGrid",
-    setup() {
-        const grid = computed(() => {
-            let gridArray = [];
-            for (let j = 0; j < 20; j++) {
-                let gridRow = [];
-                for (let i = 0; i < 10; i++) {
-                    gridRow.push(
-                        `#${Math.floor(Math.random() * 16777215).toString(16)}`
-                    );
-                }
-                gridArray.push(gridRow);
-            }
-            return gridArray;
-        });
-
-        return {
-            grid,
-        };
+    setup(props) {
+        if (props.grid.length === 0) {
+            let grid = Array.from({ length: 21 }, () =>
+                Array.from({ length: 10 }, () => "white")
+            );
+            return { grid };
+        }
     },
 });
 </script>
 
 <style scoped>
 .tetris-grid {
-    border: 1px solid #0000ff;
-    border-top: 2px solid #0000ff;
-    border-left: 2px solid #0000ff;
+    background-color: #9090ff;
+    padding: 5px;
+    padding-bottom: 4px;
+    padding-right: 4px;
+    border-radius: 10px;
+    border: 2px solid #0000ff;
     aspect-ratio: 1 / 2;
     position: absolute;
     top: 0;
@@ -99,8 +63,9 @@ export default defineComponent({
 }
 
 .tetris-cell {
-    border-bottom: 1px solid #0000ff;
-    border-right: 1px solid #0000ff;
+    border-bottom: 1px solid #9090ff;
+    border-right: 1px solid #9090ff;
+    border-radius: 3px;
     aspect-ratio: 1;
     width: 100%;
 }

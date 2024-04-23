@@ -37,11 +37,15 @@
                 </div>
             </div>
             <div class="myGrid">
-                <TetrisGrid :isMainGrid="true" />
+                <TetrisGrid :grid="myGrid" />
             </div>
             <div class="opponentsGrid">
-                <div v-for="(player, index) in opponents" :key="index" class="opponentsGrid-ctn">
-                    <TetrisGrid :isMainGrid="false"/>
+                <div
+                    v-for="(player_grid, index) in opponentsGrids"
+                    :key="index"
+                    class="opponentsGrid-ctn"
+                >
+                    <TetrisGrid :grid="player_grid" />
                 </div>
             </div>
         </div>
@@ -133,6 +137,8 @@ export default defineComponent({
         const roomsInfo = ref([]);
         const isCurrentMaster = ref(false);
         const opponents = ref([]);
+        const opponentsGrids = ref([]);
+        const myGrid = ref([]);
 
         const handleRoomsInfo = (rooms) => {
             roomsInfo.value = rooms;
@@ -152,6 +158,37 @@ export default defineComponent({
 
             const opponentContainer = document.querySelector(".opponentsGrid");
             opponentContainer.style.gridTemplateColumns = `repeat(${numberOfColumns}, 1fr)`;
+
+            if (rooms.state !== "playing") {
+                opponentsGrids.value = [];
+                for (let i = 0; i < opponents.value.length; i++) {
+                    opponentsGrids.value.push([]);
+                }
+            }
+        };
+
+        const handleGridsInfo = (grids) => {
+            console.log(grids);
+
+            myGrid.value = grids[socket.id];
+
+            opponentsGrids.value = Object.keys(grids)
+                .filter((playerId) => playerId !== socket.id)
+                .map((playerId) => grids[playerId]);
+        };
+
+        const handleKeyDown = (e) => {
+            if (e.key === "ArrowDown") {
+                socket.emit("move", props.room, "down");
+            } else if (e.key === "ArrowLeft") {
+                socket.emit("move", props.room, "left");
+            } else if (e.key === "ArrowRight") {
+                socket.emit("move", props.room, "right");
+            } else if (e.key === "ArrowUp") {
+                socket.emit("move", props.room, "up");
+            } else if (e.key === " ") {
+                socket.emit("move", props.room, "space");
+            }
         };
 
         const handleBeforeUnload = () => {
@@ -165,12 +202,17 @@ export default defineComponent({
 
         onMounted(() => {
             socket.on("rooms-info", handleRoomsInfo);
+            socket.on("grids", handleGridsInfo);
             socket.emit("get-rooms", props.room);
+
+            window.addEventListener("keydown", handleKeyDown);
         });
 
         onUnmounted(() => {
             socket.off("rooms-info", handleRoomsInfo);
+            socket.off("grids", handleGridsInfo);
             handleBeforeUnload();
+            window.removeEventListener("keydown", handleKeyDown);
         });
 
         return {
@@ -178,7 +220,8 @@ export default defineComponent({
             setState,
             handleBeforeUnload,
             isCurrentMaster,
-            opponents,
+            opponentsGrids,
+            myGrid,
         };
     },
 });

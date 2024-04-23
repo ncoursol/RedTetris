@@ -5,7 +5,6 @@ class SocketManager {
     constructor() {
         this.active_rooms = {};
         this.players = {};
-        this.games = {};
         this.verbose = false;
     }
 
@@ -25,13 +24,11 @@ class SocketManager {
         this.active_rooms[roomName] = {};
         this.active_rooms[roomName].state = "stop";
         this.active_rooms[roomName].players = {};
-        this.active_rooms[roomName].game = new Game();
         this.logSocket(`Room ${roomName} created`);
     }
 
     remove_room(roomName) {
         delete this.active_rooms[roomName];
-        delete this.games[roomName];
         this.logSocket(`Room ${roomName} removed`);
     }
 
@@ -66,6 +63,9 @@ class SocketManager {
     set_room_state(roomName, roomState) {
         if (!this.active_rooms[roomName]) return;
         this.active_rooms[roomName].state = roomState;
+        if (roomState === "start") {
+            this.active_rooms[roomName].game = new Game(this.active_rooms[roomName].players);
+        }
     }
 
     get_player_room(playerId) {
