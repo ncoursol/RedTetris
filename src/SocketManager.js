@@ -28,6 +28,8 @@ class SocketManager {
     }
 
     remove_room(roomName) {
+        this.active_rooms[roomName].game.stop();
+        this.active_rooms[roomName].game = null;
         delete this.active_rooms[roomName];
         this.logSocket(`Room ${roomName} removed`);
     }

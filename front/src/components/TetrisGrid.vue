@@ -41,20 +41,18 @@ export default defineComponent({
 .tetris-grid {
     background-color: #9090ff;
     padding: 5px;
-    padding-bottom: 4px;
-    padding-right: 4px;
     border-radius: 10px;
-    border: 2px solid #0000ff;
+    border: 2px solid #00f;
     aspect-ratio: 1 / 2;
     position: absolute;
     top: 0;
-    left: 0;
     right: 0;
+    left: 0;
     bottom: 0;
-    margin-left: auto;
-    margin-right: auto;
     max-width: 100%;
     max-height: 100%;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .tetris-row {
