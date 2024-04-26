@@ -1,10 +1,21 @@
 <template>
     <div class="gamePage">
-        <p class="room_title">{{ room }}</p>
         <div class="grid-ctn">
-            <div>
-                <div class="buttons-list">
-                    <div v-if="isCurrentMaster" class="buttons-master">
+            <div :class="{ menuSmall: showMenu }" style="max-width: 30%">
+                <div class="buttons-list" :class="{ 'Button :deep(actionBtn)': showMenu }">
+                    <div class="overlayBtn" @click="showMenu = !showMenu" :style="{ transform: `rotate(${showMenu ? 0 : 180}deg)` }">
+                        >
+                    </div>
+                    <p
+                        class="room_title overflowHandler"
+                        :class="{ hidden: showMenu }"
+                    >
+                        {{ room }}
+                    </p>
+                    <div
+                        v-if="isCurrentMaster"
+                        class="buttons-master"
+                    >
                         <Button
                             buttonText="Start Game"
                             actionType="start"
@@ -26,25 +37,25 @@
                         @action="handleBeforeUnload"
                     />
                 </div>
-                <div class="player-list">
+                <div class="player-list" :class="{ hidden: showMenu }">
                     <div
                         v-for="(player, index) in roomsInfo.players"
                         :key="index"
                         class="player"
                     >
-                        <p>{{ player.username }}</p>
+                        <p class="overflowHandler">{{ player.username }}</p>
                     </div>
                 </div>
             </div>
             <div class="myGrid">
-                <div class="row">
-                    <div class="col">
-                        <PlayerLabel :player_name="player_name" />
-                        <div class="grid">
-                            <TetrisGrid :grid="myGrid" />
-                        </div>
+                <div class="col">
+                    <PlayerLabel
+                        :player_name="player_name"
+                        class="overflowhandler"
+                    />
+                    <div class="grid">
+                        <TetrisGrid :grid="myGrid" />
                     </div>
-                    <PieceStack :stack="gameStack" />
                 </div>
             </div>
             <div class="opponentsGrid" ref="opponentsArea">
@@ -53,12 +64,10 @@
                     :key="index"
                     class="opponentsGrid-ctn"
                 >
-                    <div class="row">
-                        <div class="col">
-                            <PlayerLabel :player_name="index" />
-                            <div class="grid">
-                                <TetrisGrid :grid="player_grid" />
-                            </div>
+                    <div class="col">
+                        <PlayerLabel :player_name="index" />
+                        <div class="grid">
+                            <TetrisGrid :grid="player_grid" />
                         </div>
                     </div>
                 </div>
@@ -72,20 +81,68 @@
     display: flex;
     flex-direction: column;
 }
+
 .player-list {
     display: flex;
     flex-direction: column;
     gap: 10px;
     margin-left: 20px;
 }
+
+.menuSmall {
+    width: 54px;
+}
+
+.hidden {
+    display: none;
+}
+
+.Button :deep(.actionBtn) {
+    letter-spacing: 0px;
+}
+
+.letter-spacing {
+    letter-spacing: 0px;
+}
+
 .room_title {
-    font-size: 25px;
+    font-size: 15px;
     font-weight: 100;
     font-family: Druk;
-    letter-spacing: 5px;
-    margin: 20px;
+    letter-spacing: 2px;
+    margin-top: 10px;
+    margin-bottom: 10px;
     color: #2b2b2b;
     flex: 0 1 auto;
+}
+
+.overflowHandler {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.overlayBtn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-left: 5px;
+    width: 45px;
+    height: 50px;
+    background-color: #f2f2f2;
+    border-radius: 5px;
+    font-size: 20px;
+    font-weight: bolder;
+    font-family: Druk;
+    letter-spacing: 5px;
+    color: #2b2b2b;
+    cursor: pointer;
+    border: 2px solid #2b2b2b;
+}
+
+.overlayBtn:hover {
+    background-color: black;
+    color: white;
 }
 
 .buttons-master {
@@ -96,8 +153,6 @@
 }
 
 .buttons-list {
-    margin-left: 20px;
-    margin-right: 20px;
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -117,14 +172,14 @@
     display: flex;
     justify-content: center;
     gap: 10px;
-    margin-bottom: 10px;
+    margin: 10px;
 }
 
 .myGrid {
     flex: 1;
     position: relative;
-    font-size: 30px;
-    letter-spacing: 5px;
+    font-size: 15px;
+    letter-spacing: 2px;
 }
 
 .col {
@@ -134,11 +189,6 @@
     background-color: #c7c7c7;
     border-radius: 10px;
     border: 2px black solid;
-}
-
-.row {
-    display: flex;
-    flex-direction: row;
     position: absolute;
     top: 0;
     right: 0;
@@ -172,7 +222,6 @@
 import { defineComponent, onMounted, onUnmounted, ref } from "vue";
 import TetrisGrid from "../components/TetrisGrid.vue";
 import PlayerLabel from "../components/PlayerLabel.vue";
-import PieceStack from "../components/PieceStack.vue";
 import { useSocket } from "@/plugins/socket";
 import Button from "../components/Button.vue";
 import router from "@/routes/router";
@@ -184,7 +233,6 @@ export default defineComponent({
         Button,
         TetrisGrid,
         PlayerLabel,
-        PieceStack,
     },
     setup(props) {
         const { socket } = useSocket();
@@ -198,17 +246,22 @@ export default defineComponent({
         const opponentsArea = ref(null);
         const width = ref(0);
         const height = ref(0);
-        
-        const computeRowsAndColumns = () => {
-            const numberOfRow = Math.ceil((height.value / (width.value * 2)) * Math.sqrt(opponents.value.length));
-            const numberOfColumns = Math.ceil(opponents.value.length / numberOfRow);
 
-            const opponentContainer = document.querySelector(".opponentsGrid");
+        const showMenu = ref(false);
+
+        const computeRowsAndColumns = () => {
+            const numberOfRow = Math.ceil(
+                (height.value / (width.value * 2)) *
+                    Math.sqrt(opponents.value.length)
+            );
+            const numberOfColumns = Math.ceil(
+                opponents.value.length / numberOfRow
+            );
+
+            const opponentContainer =
+                document.querySelector(".opponentsGrid");
             opponentContainer.style.gridTemplateColumns = `repeat(${numberOfColumns}, 1fr)`;
             opponentContainer.style.gridTemplateRows = `repeat(${numberOfRow}, 1fr)`;
-
-            console.log("rows", numberOfRow);
-            console.log("columns", numberOfColumns);
         };
 
         const handleRoomsInfo = (rooms) => {
@@ -234,14 +287,15 @@ export default defineComponent({
         };
 
         const handleGridsInfo = (grids) => {
-            console.log(grids);
-
-            myGrid.value = grids[socket.id];
-
-            opponentsGrids.value = grids.filter(
-                (grid) => grid.playerId !== socket.id
+            const myIndex = Object.keys(roomsInfo.value.players).findIndex(
+                (player) => player === socket.id
             );
-            console.log("grids", opponentsGrids.value);
+
+            myGrid.value = grids[myIndex];
+            delete grids[myIndex];
+            
+            opponentsGrids.value = grids;
+            console.log(myGrid.value);
         };
 
         const handleKeyDown = (e) => {
@@ -298,7 +352,8 @@ export default defineComponent({
             isCurrentMaster,
             opponentsGrids,
             myGrid,
-            opponentsArea
+            opponentsArea,
+            showMenu,
         };
     },
 });

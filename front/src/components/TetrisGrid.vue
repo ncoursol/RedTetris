@@ -26,23 +26,15 @@ export default defineComponent({
             required: true,
         },
     },
-    setup(props) {
-        if (props.grid.length === 0) {
-            let grid = Array.from({ length: 21 }, () =>
-                Array.from({ length: 10 }, () => "white")
-            );
-            return { grid };
-        }
-    },
 });
 </script>
 
 <style scoped>
 .tetris-grid {
-    background-color: #9090ff;
+    background-color: #919191;
     padding: 5px;
     border-radius: 10px;
-    border: 2px solid #00f;
+    border: 2px solid black;
     aspect-ratio: 1 / 2;
     position: absolute;
     top: 0;
@@ -61,8 +53,8 @@ export default defineComponent({
 }
 
 .tetris-cell {
-    border-bottom: 1px solid #9090ff;
-    border-right: 1px solid #9090ff;
+    border-bottom: 1px solid #919191;
+    border-right: 1px solid #919191;
     border-radius: 3px;
     aspect-ratio: 1;
     width: 100%;

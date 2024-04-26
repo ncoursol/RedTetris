@@ -1,5 +1,5 @@
-export const TETRIMINOS = {
-    I: {
+const TETRIMINOS = {
+    0: {
         shape: [
             [
                 [0, 0, 0, 0],
@@ -28,7 +28,7 @@ export const TETRIMINOS = {
         ],
         color: "cyan",
     },
-    O: {
+    1: {
         shape: [
             [
                 [1, 1],
@@ -37,7 +37,7 @@ export const TETRIMINOS = {
         ],
         color: "yellow",
     },
-    T: {
+    2: {
         shape: [
             [
                 [0, 1, 0],
@@ -62,7 +62,7 @@ export const TETRIMINOS = {
         ],
         color: "purple",
     },
-    S: {
+    3: {
         shape: [
             [
                 [0, 1, 1],
@@ -87,7 +87,7 @@ export const TETRIMINOS = {
         ],
         color: "green",
     },
-    Z: {
+    4: {
         shape: [
             [
                 [1, 1, 0],
@@ -112,7 +112,7 @@ export const TETRIMINOS = {
         ],
         color: "red",
     },
-    L: {
+    5: {
         shape: [
             [
                 [0, 0, 1],
@@ -137,7 +137,7 @@ export const TETRIMINOS = {
         ],
         color: "orange",
     },
-    J: {
+    6: {
         shape: [
             [
                 [1, 0, 0],
@@ -164,7 +164,7 @@ export const TETRIMINOS = {
     },
 };
 
-export const WALL_KICKS = {
+const WALL_KICKS = {
     I: [
         [
             [-2, 0],
@@ -218,3 +218,5 @@ export const WALL_KICKS = {
         ],
     ],
 };
+
+module.exports = { TETRIMINOS, WALL_KICKS };

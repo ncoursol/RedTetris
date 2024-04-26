@@ -1,6 +1,6 @@
 <template>
     <div class="player-label">
-        <div>{{ player_name }}</div>
+        <div class="overflowHandler">{{ player_name }}</div>
     </div>
 </template>
 
@@ -10,6 +10,12 @@
     font-family: 'Druk';
     margin: 5px;
     margin-left: 10px;
+}
+
+.overflowHandler {
+overflow: hidden;
+white-space: nowrap;
+text-overflow: ellipsis;
 }
 </style>
 
