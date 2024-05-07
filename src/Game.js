@@ -7,7 +7,9 @@ class Game {
 
     constructor(nb_players) {
         this.#tickInterval = null;
-        this.#framePerLine = [60, 50, 40, 30, 20, 10, 8, 6, 4, 2, 1];
+        //this.#framePerLine = [60, 50, 40, 30, 20, 10, 8, 6, 4, 2, 1];
+        this.#framePerLine = [20, 10, 8, 6, 4, 2, 1];
+
         this.#frameCounter = 0;
 
         this.gameDuration = 0;
@@ -53,20 +55,23 @@ class Game {
     tick(io, roomName) {
         console.log("tick", this.gameDuration, this.level);
         for (let player in this.players) {
-            if (this.players[player].piece === null) {
-                this.spawnPiece(player);
-            } else {
-                this.players[player].piece.move(0, -1);
+            if (this.players[player].piece != null) {
+                this.players[player].piece.move(0, 1);
                 if (this.checkCollision(player)) {
-                    this.players[player].piece.move(0, 1);
+                    this.players[player].piece.move(0, -1);
                     this.addPieceToGrid(player);
                     this.players[player].piece = null;
                 }
             }
+            if (this.players[player].piece === null) {
+                this.spawnPiece(player);
+            }
         }
 
-        let renderedGrids = new Object(this.grids);
+        
+        let renderedGrids = {};
         for (let player in this.players) {
+            renderedGrids[player] = JSON.parse(JSON.stringify(this.grids[player]));
             if (this.players[player].piece !== null) {
                 this.addPieceToGrid(player, renderedGrids[player]);
             }
@@ -89,7 +94,10 @@ class Game {
     }
 
     spawnPiece(player) {
+        if (this.playersStackPos[player] > this.pieceStack.length - 1)
+            this.addBagToStack();
         const piece = this.pieceStack[this.playersStackPos[player]++];
+
         this.players[player].piece = new Piece(piece);
 
         if (this.checkCollision(player)) {
@@ -106,6 +114,10 @@ class Game {
         for (let y = 0; y < shape.length; y++) {
             for (let x = 0; x < shape[y].length; x++) {
                 if (shape[y][x] === 1) {
+                    if ((piece.y + y) > 20 || (piece.y + y) < 0)
+                        return true;
+                    if ((piece.x + x) > 9 || (piece.x + x) < 0)
+                        return true;
                     if (grid[piece.y + y][piece.x + x] !== 'black') {
                         return true;
                     }
@@ -116,9 +128,7 @@ class Game {
     }
 
     addPieceToGrid(player, grid = this.grids[player]) {
-        console.log("addPieceToGrid", player, this.players[player]);
         const piece = this.players[player].piece;
-        console.log('piece', piece);
         const shape = piece.shape[piece.currentShape];
 
         for (let y = 0; y < shape.length; y++) {
