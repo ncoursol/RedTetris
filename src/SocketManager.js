@@ -28,6 +28,9 @@ class SocketManager {
     }
 
     remove_room(roomName) {
+        if (this.active_rooms[roomName].game.gameDuration > 0)
+            this.active_rooms[roomName].game.stop();
+        this.active_rooms[roomName].game = null;
         delete this.active_rooms[roomName];
         this.logSocket(`Room ${roomName} removed`);
     }
@@ -64,7 +67,7 @@ class SocketManager {
         if (!this.active_rooms[roomName]) return;
         this.active_rooms[roomName].state = roomState;
         if (roomState === "start") {
-            this.active_rooms[roomName].game = new Game(this.active_rooms[roomName].players);
+            this.active_rooms[roomName].game = new Game(Object.keys(this.active_rooms[roomName].players).length);
         }
     }
 
