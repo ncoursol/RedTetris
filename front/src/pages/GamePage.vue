@@ -287,15 +287,11 @@ export default defineComponent({
         };
 
         const handleGridsInfo = (grids) => {
-            const myIndex = Object.keys(roomsInfo.value.players).findIndex(
-                (player) => player === socket.id
-            );
-
-            myGrid.value = grids[myIndex];
-            delete grids[myIndex];
+            myGrid.value = grids[socket.id];
+            delete grids[socket.id];
             
             opponentsGrids.value = grids;
-            console.log(myGrid.value);
+            //console.log(myGrid.value);
         };
 
         const handleKeyDown = (e) => {

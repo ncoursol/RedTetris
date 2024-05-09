@@ -4,32 +4,36 @@ class Game {
     #tickInterval;
     #framePerLine;
     #frameCounter;
+    #roomName;
+    #io;
 
-    constructor(nb_players) {
+    constructor(players, nb_players) {
         this.#tickInterval = null;
-        //this.#framePerLine = [60, 50, 40, 30, 20, 10, 8, 6, 4, 2, 1];
-        this.#framePerLine = [20, 10, 8, 6, 4, 2, 1];
-
+        this.#framePerLine = [60, 50, 40, 30, 20, 10, 8, 6, 4, 2, 1];
+        //this.#framePerLine = [20, 10, 8, 6, 4, 2, 1];
         this.#frameCounter = 0;
+        this.#roomName = null;
+        this.#io = null;
 
         this.gameDuration = 0;
         this.level = 0;
         
-        this.players = this.createPlayers(nb_players);
+        this.players = players;
         this.nb_players = nb_players;
 
         this.grids = {};
         this.pieceStack = [];
-        this.playersStackPos = new Array(this.nb_players).fill(0);
     }
     
     start(io, roomName) {
+        this.#io = io;
+        this.#roomName = roomName;
         this.initGrids();
         this.addBagToStack();
         this.#tickInterval = setInterval(() => {
             this.#frameCounter++;
             if (this.#frameCounter % this.#framePerLine[this.level] === 0) {
-                this.tick(io, roomName);
+                this.tick();
             }
             if (this.#frameCounter % 60 === 0) {
                 this.#frameCounter = 0;
@@ -52,7 +56,7 @@ class Game {
         clearInterval(this.#tickInterval);
     }
 
-    tick(io, roomName) {
+    tick() {
         console.log("tick", this.gameDuration, this.level);
         for (let player in this.players) {
             if (this.players[player].piece != null) {
@@ -67,16 +71,18 @@ class Game {
                 this.spawnPiece(player);
             }
         }
-
-        
-        let renderedGrids = {};
+        this.sendGridsRendering();
+    }
+    
+    sendGridsRendering() {
+        let rGrids = {};
         for (let player in this.players) {
-            renderedGrids[player] = JSON.parse(JSON.stringify(this.grids[player]));
+            rGrids[player] = JSON.parse(JSON.stringify(this.grids[player]));
             if (this.players[player].piece !== null) {
-                this.addPieceToGrid(player, renderedGrids[player]);
+                this.addPieceToGrid(player, rGrids[player]);
             }
         }
-        io.to(roomName).emit("grids", renderedGrids);
+        this.#io.to(this.#roomName).emit("grids", rGrids);
     }
 
     initGrids() {
@@ -94,9 +100,9 @@ class Game {
     }
 
     spawnPiece(player) {
-        if (this.playersStackPos[player] > this.pieceStack.length - 1)
+        if (this.players[player].stackPos > this.pieceStack.length - 1)
             this.addBagToStack();
-        const piece = this.pieceStack[this.playersStackPos[player]++];
+        const piece = this.pieceStack[this.players[player].stackPos++];
 
         this.players[player].piece = new Piece(piece);
 
@@ -127,6 +133,52 @@ class Game {
         return false;
     }
 
+    keyboardMove(move, player) {
+        if (this.players[player].piece === null) {
+            return;
+        }
+        switch (move) {
+            case "up":
+                this.players[player].piece.rotate(1, this.checkCollision.bind(this, player));
+                this.sendGridsRendering();
+                break;
+            case "down":
+                this.players[player].piece.move(0, 1);
+                if (this.checkCollision(player)) {
+                    this.players[player].piece.move(0, -1);
+                    this.addPieceToGrid(player);
+                    this.players[player].piece = null;
+                }
+                this.sendGridsRendering();
+                break;
+            case "left":
+                this.players[player].piece.move(-1, 0);
+                if (this.checkCollision(player)) {
+                    this.players[player].piece.move(1, 0);
+                } else {
+                    this.sendGridsRendering();
+                }
+                break;
+            case "right":
+                this.players[player].piece.move(1, 0);
+                if (this.checkCollision(player)) {
+                    this.players[player].piece.move(-1, 0);
+                } else {
+                    this.sendGridsRendering();
+                }
+                break;
+            case "space":
+                while (!this.checkCollision(player)) {
+                    this.players[player].piece.move(0, 1);
+                }
+                this.players[player].piece.move(0, -1);
+                this.addPieceToGrid(player);
+                this.players[player].piece = null;
+                this.sendGridsRendering();
+                break;
+        }
+    }
+
     addPieceToGrid(player, grid = this.grids[player]) {
         const piece = this.players[player].piece;
         const shape = piece.shape[piece.currentShape];
@@ -152,17 +204,6 @@ class Game {
     addBagToStack() {
         this.pieceStack = this.pieceStack.concat(this.randomBagGeneration());
     }
-
-    createPlayers(nb_players) {
-        const obj = {};
-        for (let i = 0; i < nb_players; i++) {
-            obj[i] = {
-                piece: null,
-                score: 0,
-            };
-        }
-        return obj;
-      }
 }
 
 module.exports = Game;

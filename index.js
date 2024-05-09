@@ -98,9 +98,7 @@ io.on("connection", (socket) => {
         ) {
             return;
         }
-        // call piece move function/object here
-        grid = [];
-        io.to(roomName).emit("grids", grid, socket.id);
+        manager.active_rooms[roomName].game.keyboardMove(move, socket.id);
     });
 
     socket.on("room-state", (roomName, roomState) => {

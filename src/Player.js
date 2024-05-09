@@ -3,6 +3,10 @@ class Player {
         this.playerId = socketId;
         this.room = room;
         this.username = '';
+
+        this.piece = null;
+        this.score = 0;
+        this.stackPos = 0;
     }
 }
 
