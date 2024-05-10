@@ -4,14 +4,17 @@ class Game {
     #tickInterval;
     #framePerLine;
     #frameCounter;
+    #lineScore;
     #roomName;
     #io;
 
     constructor(players, nb_players) {
         this.#tickInterval = null;
         this.#framePerLine = [60, 50, 40, 30, 20, 10, 8, 6, 4, 2, 1];
-        //this.#framePerLine = [20, 10, 8, 6, 4, 2, 1];
         this.#frameCounter = 0;
+
+        this.#lineScore = [100, 300, 500, 800];
+
         this.#roomName = null;
         this.#io = null;
 
@@ -54,6 +57,10 @@ class Game {
         this.level = 0;
         this.#frameCounter = 0;
         clearInterval(this.#tickInterval);
+        for (let player in this.players) {
+            this.players[player].piece = null;
+            this.players[player].stackPos = 0;
+        }
     }
 
     tick() {
@@ -77,12 +84,25 @@ class Game {
     sendGridsRendering() {
         let rGrids = {};
         for (let player in this.players) {
-            rGrids[player] = JSON.parse(JSON.stringify(this.grids[player]));
+            let username = this.players[player].username;
+            rGrids[username] = JSON.parse(JSON.stringify(this.grids[player]));
             if (this.players[player].piece !== null) {
-                this.addPieceToGrid(player, rGrids[player]);
+                this.addPieceToGrid(player, rGrids[username]);
             }
         }
         this.#io.to(this.#roomName).emit("grids", rGrids);
+        this.#io.to(this.#roomName).emit("scores", this.scoreGrid());
+    }
+
+    scoreGrid() {
+        let scores = {};
+        // scores sort by score
+        let sorted = Object.keys(this.players).sort((a, b) => this.players[b].score - this.players[a].score);
+        for (let i = 0; i < this.nb_players; i++) {
+            let player = sorted[i];
+            scores[this.players[player].username] = this.players[player].score;
+        }
+        return scores;
     }
 
     initGrids() {
@@ -107,8 +127,11 @@ class Game {
         this.players[player].piece = new Piece(piece);
 
         if (this.checkCollision(player)) {
-            console.log("game over");
-            this.stop();
+            this.players[player].piece.move(0, -1);
+            if (this.checkCollision(player)) {
+                console.log("game over");
+                this.stop();
+            }
         }
     }
 
@@ -149,6 +172,7 @@ class Game {
                     this.addPieceToGrid(player);
                     this.players[player].piece = null;
                 }
+                this.players[player].score += 1;
                 this.sendGridsRendering();
                 break;
             case "left":
@@ -168,12 +192,16 @@ class Game {
                 }
                 break;
             case "space":
+                let down = 0;
                 while (!this.checkCollision(player)) {
                     this.players[player].piece.move(0, 1);
+                    down++;
                 }
+                this.players[player].score += (down - 1) * 2;
                 this.players[player].piece.move(0, -1);
                 this.addPieceToGrid(player);
                 this.players[player].piece = null;
+                this.spawnPiece(player);
                 this.sendGridsRendering();
                 break;
         }
@@ -189,6 +217,23 @@ class Game {
                     grid[piece.y + y][piece.x + x] = piece.color;
                 }
             }
+        }
+        this.checkLines(player);
+    }
+
+    checkLines(player) {
+        const grid = this.grids[player];
+        let lines = 0;
+        for (let i = 0; i < grid.length; i++) {
+            if (grid[i].every((cell) => cell !== 'black')) {
+                grid.splice(i, 1);
+                grid.unshift(new Array(10).fill('black'));
+                lines++;
+            }
+        }
+        if (lines > 0) {
+            this.players[player].score += this.#lineScore[lines - 1] * (this.level + 1);
+            this.sendGridsRendering();
         }
     }
 

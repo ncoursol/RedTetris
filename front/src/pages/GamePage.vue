@@ -2,8 +2,17 @@
     <div class="gamePage">
         <div class="grid-ctn">
             <div :class="{ menuSmall: showMenu }" style="max-width: 30%">
-                <div class="buttons-list" :class="{ 'Button :deep(actionBtn)': showMenu }">
-                    <div class="overlayBtn" @click="showMenu = !showMenu" :style="{ transform: `rotate(${showMenu ? 0 : 180}deg)` }">
+                <div
+                    class="buttons-list"
+                    :class="{ 'Button :deep(actionBtn)': showMenu }"
+                >
+                    <div
+                        class="overlayBtn"
+                        @click="showMenu = !showMenu"
+                        :style="{
+                            transform: `rotate(${showMenu ? 0 : 180}deg)`,
+                        }"
+                    >
                         >
                     </div>
                     <p
@@ -12,10 +21,7 @@
                     >
                         {{ room }}
                     </p>
-                    <div
-                        v-if="isCurrentMaster"
-                        class="buttons-master"
-                    >
+                    <div v-if="isCurrentMaster" class="buttons-master">
                         <Button
                             buttonText="Start Game"
                             actionType="start"
@@ -39,11 +45,16 @@
                 </div>
                 <div class="player-list" :class="{ hidden: showMenu }">
                     <div
-                        v-for="(player, index) in roomsInfo.players"
-                        :key="index"
+                        v-for="(score, player) in scoreGrid"
+                        :key="player"
                         class="player"
                     >
-                        <p class="overflowHandler">{{ player.username }}</p>
+                        <div style="display: flex">
+                            <p class="overflowHandler" style="width: 100%">
+                                {{ player }}
+                            </p>
+                            <div style="margin: 3px">{{ score }}</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -67,7 +78,7 @@
                     <div class="col">
                         <PlayerLabel :player_name="index" />
                         <div class="grid">
-                            <TetrisGrid :grid="player_grid" />
+                            <TetrisGrid :grid="player_grid" :opponentGrid="true" />
                         </div>
                     </div>
                 </div>
@@ -85,8 +96,8 @@
 .player-list {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    margin-left: 20px;
+    gap: 5px;
+    border: 1px solid black;
 }
 
 .menuSmall {
@@ -120,6 +131,7 @@
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+    margin: 3px;
 }
 
 .overlayBtn {
@@ -173,6 +185,7 @@
     justify-content: center;
     gap: 10px;
     margin: 10px;
+    padding-bottom: 14px;
 }
 
 .myGrid {
@@ -186,9 +199,6 @@
     display: flex;
     flex-direction: column;
     width: 100%;
-    background-color: #c7c7c7;
-    border-radius: 10px;
-    border: 2px black solid;
     position: absolute;
     top: 0;
     right: 0;
@@ -200,7 +210,7 @@
     display: flex;
     position: relative;
     flex: 1;
-    margin-bottom: 22px;
+    justify-content: center;
 }
 
 .opponentsGrid-ctn {
@@ -248,6 +258,7 @@ export default defineComponent({
         const height = ref(0);
 
         const showMenu = ref(false);
+        const scoreGrid = ref([]);
 
         const computeRowsAndColumns = () => {
             const numberOfRow = Math.ceil(
@@ -258,8 +269,7 @@ export default defineComponent({
                 opponents.value.length / numberOfRow
             );
 
-            const opponentContainer =
-                document.querySelector(".opponentsGrid");
+            const opponentContainer = document.querySelector(".opponentsGrid");
             opponentContainer.style.gridTemplateColumns = `repeat(${numberOfColumns}, 1fr)`;
             opponentContainer.style.gridTemplateRows = `repeat(${numberOfRow}, 1fr)`;
         };
@@ -287,9 +297,9 @@ export default defineComponent({
         };
 
         const handleGridsInfo = (grids) => {
-            myGrid.value = grids[socket.id];
-            delete grids[socket.id];
-            
+            myGrid.value = grids[props.player_name];
+            delete grids[props.player_name];
+
             opponentsGrids.value = grids;
             //console.log(myGrid.value);
         };
@@ -320,6 +330,9 @@ export default defineComponent({
         onMounted(() => {
             socket.on("rooms-info", handleRoomsInfo);
             socket.on("grids", handleGridsInfo);
+            socket.on("scores", (score) => {
+                scoreGrid.value = score;
+            });
             socket.emit("get-rooms", props.room);
 
             window.addEventListener("keydown", handleKeyDown);
@@ -331,6 +344,7 @@ export default defineComponent({
         onUnmounted(() => {
             socket.off("rooms-info", handleRoomsInfo);
             socket.off("grids", handleGridsInfo);
+            socket.off("scores");
             handleBeforeUnload();
             window.removeEventListener("keydown", handleKeyDown);
         });
@@ -350,6 +364,7 @@ export default defineComponent({
             myGrid,
             opponentsArea,
             showMenu,
+            scoreGrid,
         };
     },
 });
