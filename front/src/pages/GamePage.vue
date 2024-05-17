@@ -78,7 +78,10 @@
                     <div class="col">
                         <PlayerLabel :player_name="index" />
                         <div class="grid">
-                            <TetrisGrid :grid="player_grid" :opponentGrid="true" />
+                            <TetrisGrid
+                                :grid="player_grid"
+                                :opponentGrid="true"
+                            />
                         </div>
                     </div>
                 </div>
@@ -289,9 +292,10 @@ export default defineComponent({
             computeRowsAndColumns();
 
             if (rooms.state !== "playing") {
+                myGrid.value = new Array(21).fill(new Array(10).fill(["black", "null"]));
                 opponentsGrids.value = {};
                 for (let i = 0; i < opponents.value.length; i++) {
-                    opponentsGrids.value[opponents.value[i].username] = [];
+                    opponentsGrids.value[opponents.value[i].username] = new Array(21).fill(new Array(10).fill(['black', 'null']));
                 }
             }
         };
@@ -337,7 +341,7 @@ export default defineComponent({
 
             window.addEventListener("keydown", handleKeyDown);
 
-            width.value = opponentsArea.value.offsetWidth;
+            width.value = opponentsArea.value.oopponentsAreaffsetWidth;
             height.value = opponentsArea.value.offsetHeight;
         });
 
@@ -346,7 +350,7 @@ export default defineComponent({
             socket.off("grids", handleGridsInfo);
             socket.off("scores");
             handleBeforeUnload();
-            window.removeEventListener("keydown", handleKeyDown);
+            window.removeEventListener("keydown", handleKeyDown);opponentsArea
         });
 
         onresize = () => {

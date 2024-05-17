@@ -56,11 +56,16 @@ class Game {
         this.gameDuration = 0;
         this.level = 0;
         this.#frameCounter = 0;
+        this.initGrids();
+        this.pieceStack = [];
         clearInterval(this.#tickInterval);
         for (let player in this.players) {
             this.players[player].piece = null;
             this.players[player].stackPos = 0;
+            this.players[player].score = 0;
+            this.players[player].lockLines = 0;
         }
+        this.sendGridsRendering();
     }
 
     tick() {
@@ -110,7 +115,7 @@ class Game {
         for (let opponent in this.players) {
             if (opponent !== player) {
                 for (let i = 0; i < nb_lines; i++) {
-                    this.grids[opponent][21 - i - this.players[opponent].lockLines] = new Array(10).fill(['black', 'lock']);
+                    this.grids[opponent][20 - i - this.players[opponent].lockLines] = new Array(10).fill(['gray', 'lock']);
                 }
                 this.players[opponent].lockLines = nb_lines;
             }
@@ -153,7 +158,6 @@ class Game {
             this.players[player].piece.move(0, -1);
             if (this.checkCollision(player)) {
                 console.log("game over");
-                console.log(this.grids[player]);
                 this.stop();
             }
         }
@@ -172,6 +176,9 @@ class Game {
                     if ((piece.x + x) > 9 || (piece.x + x) < 0)
                         return true;
                     if (grid[piece.y + y][piece.x + x][0] !== 'black' && grid[piece.y + y][piece.x + x][1] !== 'shadow') {
+                        return true;
+                    }
+                    if (grid[piece.y + y][piece.x + x][1] === 'lock') {
                         return true;
                     }
                 }
@@ -252,18 +259,17 @@ class Game {
         const grid = this.grids[player];
         let lines = 0;
         for (let i = 0; i < grid.length; i++) {
-            if (grid[i].every((cell) => cell !== 'black' && cell[1] !== 'shadow')) {
+            if (grid[i].every((cell) => cell[0] !== 'black' && cell[1] !== 'shadow' && cell[1] !== 'lock')) {
                 grid.splice(i, 1);
                 grid.unshift(new Array(10).fill(['black', 'null']));
                 lines++;
             }
         }
-        /*
+
         if (lines > 0) {
             this.lockLines(player, lines);
             this.players[player].score += this.#lineScore[lines - 1] * (this.level + 1);
         }
-        */
     }
 
     randomBagGeneration() {
