@@ -301,7 +301,7 @@ export default defineComponent({
             delete grids[props.player_name];
 
             opponentsGrids.value = grids;
-            //console.log(myGrid.value);
+            console.log(myGrid.value);
         };
 
         const handleKeyDown = (e) => {

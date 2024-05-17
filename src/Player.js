@@ -7,6 +7,7 @@ class Player {
         this.piece = null;
         this.score = 0;
         this.stackPos = 0;
+        this.lockLines = 0;
     }
 }
 

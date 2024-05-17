@@ -9,10 +9,10 @@
                 v-for="(cell, cellIndex) in row"
                 :key="cellIndex"
                 class="tetris-cell"
-                :style="{ backgroundColor: cell, borderRadius: opponentGrid ? '1px' : '3px' }"
+                :style="{ backgroundColor: cell[0], borderRadius: opponentGrid ? '1px' : '3px' }"
             >
-                <div v-if="cell !== 'black' && !opponentGrid" class="cell-volume" :style="{ borderColor: cell }">
-                    <div class="cell-top" :style="{ borderColor: cell }"></div>
+                <div v-if="!(cell[0] === 'black' && cell[1] === 'null') && !opponentGrid" class="cell-volume" :style="{ borderColor: cell[0] }">
+                    <div class="cell-top" :style="{ borderColor: cell[1] !== 'null' ? 'black' : cell[0] }"></div>
                 </div>
             </div>
         </div>

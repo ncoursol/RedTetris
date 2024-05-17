@@ -70,7 +70,7 @@ class Game {
                 this.players[player].piece.move(0, 1);
                 if (this.checkCollision(player)) {
                     this.players[player].piece.move(0, -1);
-                    this.addPieceToGrid(player);
+                    this.addPieceToGrid(player, 0);
                     this.players[player].piece = null;
                 }
             }
@@ -87,11 +87,34 @@ class Game {
             let username = this.players[player].username;
             rGrids[username] = JSON.parse(JSON.stringify(this.grids[player]));
             if (this.players[player].piece !== null) {
-                this.addPieceToGrid(player, rGrids[username]);
+                this.drawShadow(this.players[player].piece, rGrids[username], player);
+                this.addPieceToGrid(player, 0, rGrids[username]);
             }
         }
         this.#io.to(this.#roomName).emit("grids", rGrids);
         this.#io.to(this.#roomName).emit("scores", this.scoreGrid());
+    }
+
+    drawShadow(piece, grid, player) {
+        const tmp = [piece.x, piece.y]
+        while (!this.checkCollision(player)) {
+            piece.move(0, 1);
+        }
+        piece.move(0, -1);
+        this.addPieceToGrid(player, 1, grid);
+        piece.x = tmp[0];
+        piece.y = tmp[1];
+    }
+
+    lockLines(player, nb_lines) {
+        for (let opponent in this.players) {
+            if (opponent !== player) {
+                for (let i = 0; i < nb_lines; i++) {
+                    this.grids[opponent][21 - i - this.players[opponent].lockLines] = new Array(10).fill(['black', 'lock']);
+                }
+                this.players[opponent].lockLines = nb_lines;
+            }
+        }
     }
 
     scoreGrid() {
@@ -112,7 +135,7 @@ class Game {
             for (let i = 0; i < 21; i++) {
                 grids[player].push([]);
                 for (let j = 0; j < 10; j++) {
-                    grids[player][i].push('black');
+                    grids[player][i].push(['black', 'null']);
                 }
             }
         }
@@ -130,6 +153,7 @@ class Game {
             this.players[player].piece.move(0, -1);
             if (this.checkCollision(player)) {
                 console.log("game over");
+                console.log(this.grids[player]);
                 this.stop();
             }
         }
@@ -147,7 +171,7 @@ class Game {
                         return true;
                     if ((piece.x + x) > 9 || (piece.x + x) < 0)
                         return true;
-                    if (grid[piece.y + y][piece.x + x] !== 'black') {
+                    if (grid[piece.y + y][piece.x + x][0] !== 'black' && grid[piece.y + y][piece.x + x][1] !== 'shadow') {
                         return true;
                     }
                 }
@@ -169,7 +193,7 @@ class Game {
                 this.players[player].piece.move(0, 1);
                 if (this.checkCollision(player)) {
                     this.players[player].piece.move(0, -1);
-                    this.addPieceToGrid(player);
+                    this.addPieceToGrid(player, 0);
                     this.players[player].piece = null;
                 }
                 this.players[player].score += 1;
@@ -199,7 +223,7 @@ class Game {
                 }
                 this.players[player].score += (down - 1) * 2;
                 this.players[player].piece.move(0, -1);
-                this.addPieceToGrid(player);
+                this.addPieceToGrid(player, 0);
                 this.players[player].piece = null;
                 this.spawnPiece(player);
                 this.sendGridsRendering();
@@ -207,14 +231,17 @@ class Game {
         }
     }
 
-    addPieceToGrid(player, grid = this.grids[player]) {
+    addPieceToGrid(player, type, grid = this.grids[player]) {
         const piece = this.players[player].piece;
         const shape = piece.shape[piece.currentShape];
 
         for (let y = 0; y < shape.length; y++) {
             for (let x = 0; x < shape[y].length; x++) {
                 if (shape[y][x] === 1) {
-                    grid[piece.y + y][piece.x + x] = piece.color;
+                    if (type === 0)
+                        grid[piece.y + y][piece.x + x] = [piece.color, 'null'];
+                    else if (type === 1)
+                        grid[piece.y + y][piece.x + x] = [piece.color, 'shadow'];
                 }
             }
         }
@@ -225,16 +252,18 @@ class Game {
         const grid = this.grids[player];
         let lines = 0;
         for (let i = 0; i < grid.length; i++) {
-            if (grid[i].every((cell) => cell !== 'black')) {
+            if (grid[i].every((cell) => cell !== 'black' && cell[1] !== 'shadow')) {
                 grid.splice(i, 1);
-                grid.unshift(new Array(10).fill('black'));
+                grid.unshift(new Array(10).fill(['black', 'null']));
                 lines++;
             }
         }
+        /*
         if (lines > 0) {
+            this.lockLines(player, lines);
             this.players[player].score += this.#lineScore[lines - 1] * (this.level + 1);
-            this.sendGridsRendering();
         }
+        */
     }
 
     randomBagGeneration() {
