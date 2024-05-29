@@ -2,86 +2,47 @@
     <div class="gamePage">
         <div class="grid-ctn">
             <div :class="{ menuSmall: showMenu }" style="max-width: 30%">
-                <div
-                    class="buttons-list"
-                    :class="{ 'Button :deep(actionBtn)': showMenu }"
-                >
-                    <div
-                        class="overlayBtn"
-                        @click="showMenu = !showMenu"
-                        :style="{
-                            transform: `rotate(${showMenu ? 0 : 180}deg)`,
-                        }"
-                    >
+                <div class="buttons-list" :class="{ 'Button :deep(actionBtn)': showMenu }">
+                    <div class="overlayBtn" @click="showMenu = !showMenu" :style="{
+                transform: `rotate(${showMenu ? 0 : 180}deg)`,
+            }">
                         >
                     </div>
-                    <p
-                        class="room_title overflowHandler"
-                        :class="{ hidden: showMenu }"
-                    >
+                    <p class="room_title overflowHandler" :class="{ hidden: showMenu }">
                         {{ room }}
                     </p>
                     <div v-if="isCurrentMaster" class="buttons-master">
-                        <Button
-                            buttonText="Start Game"
-                            actionType="start"
-                            @action="setState"
-                        />
-                        <Button
-                            buttonText="Stop Game"
-                            actionType="stop"
-                            @action="setState"
-                        />
-                        <Button
-                            buttonText="Pause game"
-                            actionType="pause"
-                            @action="setState"
-                        />
+                        <Button buttonText="Start Game" actionType="start" @action="setState" />
+                        <Button buttonText="Stop Game" actionType="stop" @action="setState" />
+                        <Button buttonText="Pause game" actionType="pause" @action="setState" />
                     </div>
-                    <Button
-                        buttonText="Leave Room"
-                        @action="handleBeforeUnload"
-                    />
+                    <Button buttonText="Leave Room" @action="handleBeforeUnload" />
                 </div>
                 <div class="player-list" :class="{ hidden: showMenu }">
-                    <div
-                        v-for="(score, player) in scoreGrid"
-                        :key="player"
-                        class="player"
-                    >
+                    <div v-for="(score, player) in scoreGrid" :key="player" class="player">
                         <div style="display: flex">
                             <p class="overflowHandler" style="width: 100%">
                                 {{ player }}
                             </p>
-                            <div style="margin: 3px">{{ score }}</div>
+                            <div style="margin: 3px">{{ score.score }}</div>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="myGrid">
                 <div class="col">
-                    <PlayerLabel
-                        :player_name="player_name"
-                        class="overflowhandler"
-                    />
+                    <PlayerLabel :player_name="player_name" class="overflowhandler" />
                     <div class="grid">
-                        <TetrisGrid :grid="myGrid" />
+                        <TetrisGrid :grid="myGrid" :status="myGridStatus" />
                     </div>
                 </div>
             </div>
             <div class="opponentsGrid" ref="opponentsArea">
-                <div
-                    v-for="(player_grid, index) in opponentsGrids"
-                    :key="index"
-                    class="opponentsGrid-ctn"
-                >
+                <div v-for="(player_grid, index) in opponentsGrids" :key="index" class="opponentsGrid-ctn">
                     <div class="col">
                         <PlayerLabel :player_name="index" />
                         <div class="grid">
-                            <TetrisGrid
-                                :grid="player_grid"
-                                :opponentGrid="true"
-                            />
+                            <TetrisGrid :grid="player_grid" :opponentGrid="true" :status="scoreGrid[index].status" />
                         </div>
                     </div>
                 </div>
@@ -254,7 +215,9 @@ export default defineComponent({
         const opponents = ref([]);
 
         const opponentsGrids = ref([]);
+
         const myGrid = ref([]);
+        const myGridStatus = ref([]);
 
         const opponentsArea = ref(null);
         const width = ref(0);
@@ -266,7 +229,7 @@ export default defineComponent({
         const computeRowsAndColumns = () => {
             const numberOfRow = Math.ceil(
                 (height.value / (width.value * 2)) *
-                    Math.sqrt(opponents.value.length)
+                Math.sqrt(opponents.value.length)
             );
             const numberOfColumns = Math.ceil(
                 opponents.value.length / numberOfRow
@@ -279,7 +242,7 @@ export default defineComponent({
 
         const handleRoomsInfo = (rooms) => {
             roomsInfo.value = rooms;
-            //console.log(roomsInfo.value);
+            //console.log('INFO', roomsInfo.value);
 
             isCurrentMaster.value =
                 rooms.players[Object.keys(rooms.players)[0]].playerId ===
@@ -288,6 +251,13 @@ export default defineComponent({
             opponents.value = Object.values(rooms.players).filter(
                 (player) => player.playerId !== socket.id
             );
+
+            Object.keys(roomsInfo.value.players).forEach((player) => {
+                scoreGrid.value[roomsInfo.value.players[player].username] = {
+                    score: 0,
+                    status: 0,
+                };
+            });
 
             computeRowsAndColumns();
 
@@ -305,7 +275,6 @@ export default defineComponent({
             delete grids[props.player_name];
 
             opponentsGrids.value = grids;
-            console.log(myGrid.value);
         };
 
         const handleKeyDown = (e) => {
@@ -323,11 +292,16 @@ export default defineComponent({
         };
 
         const handleBeforeUnload = () => {
+            socket.emit("room-state", props.room, 'stop');
             socket.emit("leave-room");
             router.push("/");
         };
 
         const setState = (actionType) => {
+            console.log(actionType);
+            if (roomsInfo.value.state === actionType) {
+                return;
+            }
             socket.emit("room-state", props.room, actionType);
         };
 
@@ -336,6 +310,7 @@ export default defineComponent({
             socket.on("grids", handleGridsInfo);
             socket.on("scores", (score) => {
                 scoreGrid.value = score;
+                myGridStatus.value = score[props.player_name].status;
             });
             socket.emit("get-rooms", props.room);
 
@@ -350,7 +325,7 @@ export default defineComponent({
             socket.off("grids", handleGridsInfo);
             socket.off("scores");
             handleBeforeUnload();
-            window.removeEventListener("keydown", handleKeyDown);opponentsArea
+            window.removeEventListener("keydown", handleKeyDown);
         });
 
         onresize = () => {
@@ -366,6 +341,7 @@ export default defineComponent({
             isCurrentMaster,
             opponentsGrids,
             myGrid,
+            myGridStatus,
             opponentsArea,
             showMenu,
             scoreGrid,

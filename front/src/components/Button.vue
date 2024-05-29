@@ -1,5 +1,5 @@
 <template>
-	<button class="actionBtn" @click="emitAction">
+	<button class="actionBtn" @click="emitAction" @keydown.space.prevent>
 		>
 		<slot>{{ buttonText }}</slot>
 	</button>

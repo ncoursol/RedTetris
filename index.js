@@ -98,6 +98,11 @@ io.on("connection", (socket) => {
         ) {
             return;
         }
+        if (
+            !manager.active_rooms[roomName] ||
+            manager.get_player_room(socket.id) != roomName
+        )
+            return;
         manager.active_rooms[roomName].game.keyboardMove(move, socket.id);
     });
 
