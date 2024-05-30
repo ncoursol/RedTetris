@@ -10,7 +10,9 @@ class Game {
 
     constructor(players, nb_players) {
         this.#tickInterval = null;
-        this.#framePerLine = [60, 55, 50, 45, 40, 35, 30, 25, 20, 15, 10, 8, 6, 4, 2, 1];
+        this.#framePerLine = [
+            60, 55, 50, 45, 40, 35, 30, 25, 20, 15, 10, 8, 6, 4, 2, 1,
+        ];
         this.#frameCounter = 0;
 
         this.#lineScore = [100, 300, 500, 800];
@@ -26,58 +28,26 @@ class Game {
 
         this.grids = {};
         this.pieceStack = [];
+
+        this.isRunning = false;
+        this.isOver = false;
     }
 
-    start(io, roomName) {
+    changeNumberOfPlayers(players) {
+        this.players = players;
+        this.nb_players = Object.keys(players).length;
+    }
+
+    init(io, roomName) {
         this.#io = io;
         this.#roomName = roomName;
-        this.initGrids();
-        this.addBagToStack();
-        this.#tickInterval = setInterval(() => {
-            this.#frameCounter++;
-            if (this.#frameCounter % this.#framePerLine[this.level] === 0) {
-                this.tick();
-            }
-            if (this.#frameCounter % 60 === 0) {
-                this.#frameCounter = 0;
-                this.gameDuration++;
-                this.level = Math.floor(
-                    Math.max(1, Math.floor(this.gameDuration + 30) / 20) - 1
-                );
-            }
-        }, 1000 / 60);
-    }
-
-    pause() {
-        clearInterval(this.#tickInterval);
-    }
-
-    gameOver(player) {
-        console.log("Game Over");
-        this.players[player].piece = null;
-        this.players[player].status = 1;
-        if (Object.values(this.players).every((player) => player.status === 1)) {
-            this.stop();
-        } else {
-            let alive = 0;
-            for (let player in this.players) {
-                if (this.players[player].status === 0) {
-                    alive++;
-                }
-            }
-            if (alive === 1) {
-                this.pause();
-            }
-        }
-    }
-
-    stop() {
         this.gameDuration = 0;
         this.level = 0;
         this.#frameCounter = 0;
-        this.initGrids();
-        this.pieceStack = [];
-        clearInterval(this.#tickInterval);
+        this.isOver = false;
+        this.#tickInterval = null;
+        this.isRunning = false;
+        this.isOver = false;
         for (let player in this.players) {
             this.players[player].piece = null;
             this.players[player].stackPos = 0;
@@ -86,6 +56,69 @@ class Game {
             this.players[player].isLastTick = 0;
             this.players[player].status = 0;
         }
+        this.initGrids();
+        this.addBagToStack();
+        this.start();
+    }
+
+    start() {
+        if (this.pieceStack.length === 0) {
+            this.init(this.#io, this.#roomName);
+        }
+        if (!this.isOver) {
+            this.isRunning = true;
+            this.#tickInterval = setInterval(() => {
+                this.#frameCounter++;
+                if (this.#frameCounter % this.#framePerLine[this.level] === 0) {
+                    this.tick();
+                }
+                if (this.#frameCounter % 60 === 0) {
+                    this.#frameCounter = 0;
+                    this.gameDuration++;
+                    this.level = Math.floor(
+                        Math.max(1, Math.floor(this.gameDuration + 30) / 20) - 1
+                    );
+                }
+
+            }, 1000 / 60);
+        }
+    }
+
+    pause() {
+        this.isRunning = false;
+        clearInterval(this.#tickInterval);
+    }
+
+    gameOver(player) {
+        this.players[player].piece = null;
+        this.players[player].status = 1;
+        if (
+            Object.values(this.players).every((player) => player.status === 1)
+        ) {
+            this.isOver = true;
+            this.pause();
+        } else {
+            let alive = 0;
+            for (let player in this.players) {
+                if (this.players[player].status === 0) {
+                    alive++;
+                }
+            }
+            if (alive === 1 && this.nb_players > 1) {
+                this.isOver = true;
+                this.pause();
+            }
+        }
+    }
+
+    stop() {
+        this.initGrids();
+        clearInterval(this.#tickInterval);
+        for (let player in this.players) {
+            this.players[player].piece = null;
+            this.players[player].status = 0;
+            this.players[player].score = 0;
+        }
         this.sendGridsRendering();
     }
 
@@ -93,7 +126,10 @@ class Game {
         console.log("tick", this.gameDuration, this.level);
         for (let player in this.players) {
             if (this.players[player].status === 0) {
-                if (this.players[player].piece != null && !this.checkCollision(player)) {
+                if (
+                    this.players[player].piece != null &&
+                    !this.checkCollision(player)
+                ) {
                     this.players[player].piece.move(0, 1);
                     if (this.checkCollision(player)) {
                         this.players[player].piece.move(0, -1);
@@ -120,8 +156,15 @@ class Game {
         for (let player in this.players) {
             let username = this.players[player].username;
             rGrids[username] = JSON.parse(JSON.stringify(this.grids[player]));
-            if (this.players[player].piece !== null && !this.checkCollision(player)) {
-                this.drawShadow(this.players[player].piece, rGrids[username], player);
+            if (
+                this.players[player].piece !== null &&
+                !this.checkCollision(player)
+            ) {
+                this.drawShadow(
+                    this.players[player].piece,
+                    rGrids[username],
+                    player
+                );
                 this.addPieceToGrid(player, 0, rGrids[username]);
             }
         }
@@ -133,7 +176,7 @@ class Game {
         if (this.checkCollision(player)) {
             return;
         }
-        const tmp = [piece.x, piece.y]
+        const tmp = [piece.x, piece.y];
         while (!this.checkCollision(player)) {
             piece.move(0, 1);
         }
@@ -147,7 +190,9 @@ class Game {
         for (let opponent in this.players) {
             if (opponent !== player && this.players[opponent].status === 0) {
                 for (let i = 0; i < nb_lines; i++) {
-                    this.grids[opponent][20 - i - this.players[opponent].lockLines] = new Array(10).fill(['gray', 'lock']);
+                    this.grids[opponent][
+                        20 - i - this.players[opponent].lockLines
+                    ] = new Array(10).fill(["gray", "lock"]);
                 }
                 this.players[opponent].lockLines += nb_lines;
                 if (this.players[opponent].lockLines >= 20) {
@@ -159,12 +204,16 @@ class Game {
 
     scoreGrid() {
         let scores = {};
-        let sorted = Object.keys(this.players).sort((a, b) => this.players[b].score - this.players[a].score);
+        let sorted = Object.keys(this.players).sort(
+            (a, b) => this.players[b].score - this.players[a].score
+        );
         for (let i = 0; i < this.nb_players; i++) {
             let player = sorted[i];
             scores[this.players[player].username] = {};
-            scores[this.players[player].username].score = this.players[player].score;
-            scores[this.players[player].username].status = this.players[player].status;
+            scores[this.players[player].username].score =
+                this.players[player].score;
+            scores[this.players[player].username].status =
+                this.players[player].status;
         }
         return scores;
     }
@@ -176,7 +225,7 @@ class Game {
             for (let i = 0; i < 21; i++) {
                 grids[player].push([]);
                 for (let j = 0; j < 10; j++) {
-                    grids[player][i].push(['black', 'null']);
+                    grids[player][i].push(["black", "null"]);
                 }
             }
         }
@@ -206,14 +255,15 @@ class Game {
         for (let y = 0; y < shape.length; y++) {
             for (let x = 0; x < shape[y].length; x++) {
                 if (shape[y][x] === 1) {
-                    if ((piece.y + y) > 20 || (piece.y + y) < 0)
-                        return true;
-                    if ((piece.x + x) > 9 || (piece.x + x) < 0)
-                        return true;
-                    if (grid[piece.y + y][piece.x + x][0] !== 'black' && grid[piece.y + y][piece.x + x][1] !== 'shadow') {
+                    if (piece.y + y > 20 || piece.y + y < 0) return true;
+                    if (piece.x + x > 9 || piece.x + x < 0) return true;
+                    if (
+                        grid[piece.y + y][piece.x + x][0] !== "black" &&
+                        grid[piece.y + y][piece.x + x][1] !== "shadow"
+                    ) {
                         return true;
                     }
-                    if (grid[piece.y + y][piece.x + x][1] === 'lock') {
+                    if (grid[piece.y + y][piece.x + x][1] === "lock") {
                         return true;
                     }
                 }
@@ -223,12 +273,20 @@ class Game {
     }
 
     keyboardMove(move, player) {
-        if (this.players[player].piece === null || this.checkCollision(player) || this.players[player].status === 1) {
+        if (
+            this.players[player].piece === null ||
+            this.checkCollision(player) ||
+            this.players[player].status === 1 ||
+            this.isRunning === false
+        ) {
             return;
         }
         switch (move) {
             case "up":
-                this.players[player].piece.rotate(1, this.checkCollision.bind(this, player));
+                this.players[player].piece.rotate(
+                    1,
+                    this.checkCollision.bind(this, player)
+                );
                 this.sendGridsRendering();
                 break;
             case "down":
@@ -281,9 +339,12 @@ class Game {
             for (let x = 0; x < shape[y].length; x++) {
                 if (shape[y][x] === 1) {
                     if (type === 0)
-                        grid[piece.y + y][piece.x + x] = [piece.color, 'null'];
+                        grid[piece.y + y][piece.x + x] = [piece.color, "null"];
                     else if (type === 1) {
-                        grid[piece.y + y][piece.x + x] = [piece.color, 'shadow'];
+                        grid[piece.y + y][piece.x + x] = [
+                            piece.color,
+                            "shadow",
+                        ];
                     }
                 }
             }
@@ -295,16 +356,24 @@ class Game {
         const grid = this.grids[player];
         let lines = 0;
         for (let i = 0; i < grid.length; i++) {
-            if (grid[i].every((cell) => cell[0] !== 'black' && cell[1] !== 'shadow' && cell[1] !== 'lock')) {
+            if (
+                grid[i].every(
+                    (cell) =>
+                        cell[0] !== "black" &&
+                        cell[1] !== "shadow" &&
+                        cell[1] !== "lock"
+                )
+            ) {
                 grid.splice(i, 1);
-                grid.unshift(new Array(10).fill(['black', 'null']));
+                grid.unshift(new Array(10).fill(["black", "null"]));
                 lines++;
             }
         }
 
         if (lines > 0) {
             this.lockLines(player, lines);
-            this.players[player].score += this.#lineScore[lines - 1] * (this.level + 1);
+            this.players[player].score +=
+                this.#lineScore[lines - 1] * (this.level + 1);
         }
     }
 

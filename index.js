@@ -113,13 +113,16 @@ io.on("connection", (socket) => {
             manager.active_rooms[roomName].state == roomState
         )
             return;
+        let tmp = manager.active_rooms[roomName].state;
         manager.set_room_state(roomName, roomState);
         if (roomState == "stop" || roomState == "start") {
             socket.to(LOBBY_ROOM).emit("rooms-info", manager.get_rooms_info());
         }
         io.to(roomName).emit("rooms-info", manager.get_rooms_info(roomName));
         if (roomState == "start") {
-            manager.active_rooms[roomName].game.start(io, roomName);
+            if (tmp == "stop")
+                manager.active_rooms[roomName].game.init(io, roomName);
+            else manager.active_rooms[roomName].game.start();
         } else if (roomState == "stop") {
             manager.active_rooms[roomName].game.stop();
         } else if (roomState == "pause") {

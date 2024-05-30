@@ -251,17 +251,16 @@ export default defineComponent({
             opponents.value = Object.values(rooms.players).filter(
                 (player) => player.playerId !== socket.id
             );
-
-            Object.keys(roomsInfo.value.players).forEach((player) => {
-                scoreGrid.value[roomsInfo.value.players[player].username] = {
-                    score: 0,
-                    status: 0,
-                };
-            });
-
+            
             computeRowsAndColumns();
-
-            if (rooms.state !== "playing") {
+            
+            if (rooms.state === "stop") {
+                Object.keys(roomsInfo.value.players).forEach((player) => {
+                    scoreGrid.value[roomsInfo.value.players[player].username] = {
+                        score: 0,
+                        status: 0,
+                    };
+                });
                 myGrid.value = new Array(21).fill(new Array(10).fill(["black", "null"]));
                 opponentsGrids.value = {};
                 for (let i = 0; i < opponents.value.length; i++) {
@@ -292,13 +291,11 @@ export default defineComponent({
         };
 
         const handleBeforeUnload = () => {
-            socket.emit("room-state", props.room, 'stop');
             socket.emit("leave-room");
             router.push("/");
         };
 
         const setState = (actionType) => {
-            console.log(actionType);
             if (roomsInfo.value.state === actionType) {
                 return;
             }
