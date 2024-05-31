@@ -19,7 +19,7 @@
                     <Button buttonText="Leave Room" @action="handleBeforeUnload" />
                 </div>
                 <div class="player-list" :class="{ hidden: showMenu }">
-                    <div v-for="(score, player) in scoreGrid" :key="player" class="player">
+                    <div v-for="(score, player) in scoreGrid" :key="player" :class="player === player_name ? 'current-player' : ''">
                         <div style="display: flex">
                             <p class="overflowHandler" style="width: 100%">
                                 {{ player }}
@@ -52,9 +52,10 @@
 </template>
 
 <style scoped>
-.player-game {
-    display: flex;
-    flex-direction: column;
+
+.current-player {
+    background-color: black;
+    color: white;
 }
 
 .player-list {
@@ -251,9 +252,9 @@ export default defineComponent({
             opponents.value = Object.values(rooms.players).filter(
                 (player) => player.playerId !== socket.id
             );
-            
+
             computeRowsAndColumns();
-            
+
             if (rooms.state === "stop") {
                 Object.keys(roomsInfo.value.players).forEach((player) => {
                     scoreGrid.value[roomsInfo.value.players[player].username] = {
@@ -277,6 +278,10 @@ export default defineComponent({
         };
 
         const handleKeyDown = (e) => {
+            if (e.repeat) {
+                return;
+            }
+
             if (e.key === "ArrowDown") {
                 socket.emit("move", props.room, "down");
             } else if (e.key === "ArrowLeft") {
@@ -310,7 +315,6 @@ export default defineComponent({
                 myGridStatus.value = score[props.player_name].status;
             });
             socket.emit("get-rooms", props.room);
-
             window.addEventListener("keydown", handleKeyDown);
 
             width.value = opponentsArea.value.oopponentsAreaffsetWidth;

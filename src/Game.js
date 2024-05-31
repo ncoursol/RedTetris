@@ -53,7 +53,6 @@ class Game {
             this.players[player].stackPos = 0;
             this.players[player].score = 0;
             this.players[player].lockLines = 0;
-            this.players[player].isLastTick = 0;
             this.players[player].status = 0;
         }
         this.initGrids();
@@ -133,14 +132,8 @@ class Game {
                     this.players[player].piece.move(0, 1);
                     if (this.checkCollision(player)) {
                         this.players[player].piece.move(0, -1);
-                        if (this.players[player].isLastTick === 1) {
-                            this.addPieceToGrid(player, 0);
-                            this.players[player].piece = null;
-                        } else {
-                            this.players[player].isLastTick = 1;
-                        }
-                    } else {
-                        this.players[player].isLastTick = 0;
+                        this.addPieceToGrid(player, 0);
+                        this.players[player].piece = null;
                     }
                 }
                 if (this.players[player].piece === null) {
@@ -193,6 +186,13 @@ class Game {
                     this.grids[opponent][
                         20 - i - this.players[opponent].lockLines
                     ] = new Array(10).fill(["gray", "lock"]);
+                    if (this.players[opponent].piece !== null && this.checkCollision(opponent)) {
+                        this.addPieceToGrid(opponent, 0);
+                        this.grids[opponent][
+                            20 - i - this.players[opponent].lockLines
+                        ] = new Array(10).fill(["gray", "lock"]);
+                        this.players[opponent].piece = null;
+                    }
                 }
                 this.players[opponent].lockLines += nb_lines;
                 if (this.players[opponent].lockLines >= 20) {

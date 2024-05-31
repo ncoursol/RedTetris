@@ -8,8 +8,6 @@ class Player {
         this.score = 0;
         this.stackPos = 0;
         this.lockLines = 0;
-        this.isLastTick = 0;
-
         this.status = 0;
     }
 }
