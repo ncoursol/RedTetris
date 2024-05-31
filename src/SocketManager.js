@@ -28,6 +28,7 @@ class SocketManager {
     }
 
     remove_room(roomName) {
+        if (!this.active_rooms[roomName]) return;
         if (this.active_rooms[roomName].game && this.active_rooms[roomName].game.gameDuration > 0)
             this.active_rooms[roomName].game.stop();
         delete this.active_rooms[roomName].game;
@@ -70,9 +71,8 @@ class SocketManager {
     set_room_state(roomName, roomState) {
         if (!this.active_rooms[roomName]) return;
         this.active_rooms[roomName].state = roomState;
-        if (roomState === "start" && !this.active_rooms[roomName].game) {
+        if (roomState === "start" && !this.active_rooms[roomName].game)
             this.active_rooms[roomName].game = new Game(this.active_rooms[roomName].players, Object.keys(this.active_rooms[roomName].players).length);
-        }
     }
 
     get_player_room(playerId) {

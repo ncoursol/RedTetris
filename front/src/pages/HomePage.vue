@@ -246,7 +246,7 @@ export default defineComponent({
         const joinRoom = (roomName, username, type) => {
             socket.emit("join-room", roomName, username, type, (error) => {
                 if (error === "") {
-                    const gameRoute = `${roomName}[${username}]`;
+                    const gameRoute = `${roomName}/${username}`;
                     router.push(gameRoute);
                 } else {
                     errorMsg.value = error;

@@ -35,7 +35,7 @@ describe("Room", function () {
             manager.add_room(room1);
             expect(manager.active_rooms).toHaveProperty(room1);
             expect(manager.active_rooms[room1]).toHaveProperty("state");
-            expect(manager.active_rooms[room1].state).toEqual("waiting");
+            expect(manager.active_rooms[room1].state).toEqual("stop");
             expect(manager.active_rooms[room1]).toHaveProperty("players");
             expect(manager.active_rooms[room1].players).toEqual({});
         });
@@ -70,6 +70,15 @@ describe("Room", function () {
             manager.remove_room(room1);
             expect(Object.keys(manager.active_rooms).length).toEqual(1);
         });
+        it("should stop the game if the game object exist and if the game is running", function () {
+            const game = {
+                gameDuration: 1,
+                stop: jest.fn(),
+            };
+            manager.active_rooms[room2].game = game;
+            manager.remove_room(room2);
+            expect(game.stop).toHaveBeenCalled();
+        });
     });
 
     describe("add_player_to_room", function () {
@@ -80,7 +89,13 @@ describe("Room", function () {
             manager.add_room(room1);
         });
         it("should add a player to a room", function () {
+            const game = {
+                changeNumberOfPlayers: jest.fn(),
+            };
+            manager.active_rooms[room1].game = game;
             manager.add_player_to_room(room1, player1);
+            expect(game.changeNumberOfPlayers).toHaveBeenCalled();
+
             expect(manager.active_rooms[room1].players).toHaveProperty(player1);
         });
         it("should not add a player to a room if they are already in it", function () {
@@ -105,7 +120,12 @@ describe("Room", function () {
             manager.add_player_to_room(room1, player2);
         });
         it("should remove a player from a room", function () {
+            const game = {
+                changeNumberOfPlayers: jest.fn(),
+            };
+            manager.active_rooms[room1].game = game;
             manager.remove_player_from_room(room1, player1);
+            expect(game.changeNumberOfPlayers).toHaveBeenCalled();
             expect(manager.active_rooms[room1].players).not.toContain(player1);
             expect(Object.keys(manager.active_rooms[room1].players).length).toEqual(1);
         });
@@ -134,19 +154,25 @@ describe("Room", function () {
             manager.add_player_to_room(room1, player1);
             manager.add_player_to_room(room1, player2);
         });
-        it("should as waiting state by default", function () {
+        it("should as stop state by default", function () {
             const info = manager.get_rooms_info(room1);
-            expect(info.state).toEqual("waiting");
+            expect(info.state).toEqual("stop");
         });
         it("should change room state", function () {
-            manager.set_room_state(room1, "playing");
+            manager.set_room_state(room1, "play");
             const info = manager.get_rooms_info(room1);
-            expect(info.state).toEqual("playing");
+            expect(info.state).toEqual("play");
         });
         it("should not change room state if the room does not exist", function () {
-            manager.set_room_state("non-existent-room", "playing");
+            manager.set_room_state("non-existent-room", "play");
             const info = manager.get_rooms_info("non-existent-room");
             expect(info).toBeNull();
+        });
+        it("should create a game object if the state is start", function () {
+            manager.set_room_state(room1, "start");
+            const info = manager.get_rooms_info(room1);
+            expect(info.state).toEqual("start");
+            expect(info.game).toBeDefined();
         });
     });
 

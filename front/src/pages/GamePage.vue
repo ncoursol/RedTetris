@@ -316,6 +316,7 @@ export default defineComponent({
             });
             socket.emit("get-rooms", props.room);
             window.addEventListener("keydown", handleKeyDown);
+            window.addEventListener('beforeunload', handleBeforeUnload);
 
             width.value = opponentsArea.value.oopponentsAreaffsetWidth;
             height.value = opponentsArea.value.offsetHeight;
@@ -327,6 +328,7 @@ export default defineComponent({
             socket.off("scores");
             handleBeforeUnload();
             window.removeEventListener("keydown", handleKeyDown);
+            window.removeEventListener('beforeunload', handleBeforeUnload);
         });
 
         onresize = () => {

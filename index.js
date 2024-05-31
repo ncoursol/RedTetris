@@ -24,27 +24,9 @@ const manager = new SocketManager();
 
 const sessionStorage = new Map();
 
-io.use((socket, next) => {
-    const sessionId = socket.handshake.auth.sessionID;
-    if (sessionId) {
-        const sessionData = sessionStorage.get(sessionId);
-        if (sessionData) {
-            socket.id = sessionData;
-            return next();
-        }
-    }
-    socket.handshake.auth.sessionID = socket.id;
-    sessionStorage.set(socket.id, socket.id);
-    next();
-});
-
 io.on("connection", (socket) => {
     manager.add_player(socket.id, LOBBY_ROOM);
     socket.join(LOBBY_ROOM);
-
-    socket.emit("session", {
-        sessionID: socket.handshake.auth.sessionID,
-    });
 
     socket.on("leave-room", () => {
         roomName = manager.get_player_room(socket.id);
@@ -61,6 +43,8 @@ io.on("connection", (socket) => {
     socket.on("join-room", (roomName, username, type, callback) => {
         if (roomName == "") {
             callback("Room name cannot be empty");
+        } else if (manager.get_player_room_by_username(username) == roomName) {
+            callback("Username already in use");
         } else if (roomName == LOBBY_ROOM) {
             callback("Unauthorized room name");
         } else if (type == "create" && manager.active_rooms[roomName]) {
