@@ -25,19 +25,15 @@ class Game {
 
         this.players = players;
         this.nb_players = nb_players;
-
+        
         this.grids = {};
         this.pieceStack = [];
-
+        
         this.isRunning = false;
         this.isOver = false;
     }
-
-    changeNumberOfPlayers(players) {
-        this.players = players;
-        this.nb_players = Object.keys(players).length;
-    }
-
+    
+    
     init(io, roomName) {
         this.#io = io;
         this.#roomName = roomName;
@@ -59,6 +55,20 @@ class Game {
         this.addBagToStack();
         this.start();
     }
+    
+    initGrids() {
+        let grids = {};
+        for (let player in this.players) {
+            grids[player] = [];
+            for (let i = 0; i < 21; i++) {
+                grids[player].push([]);
+                for (let j = 0; j < 10; j++) {
+                    grids[player][i].push(["black", "null"]);
+                }
+            }
+        }
+        this.grids = grids;
+    }
 
     start() {
         if (this.pieceStack.length === 0) {
@@ -78,16 +88,16 @@ class Game {
                         Math.max(1, Math.floor(this.gameDuration + 30) / 20) - 1
                     );
                 }
-
+                
             }, 1000 / 60);
         }
     }
-
+    
     pause() {
         this.isRunning = false;
         clearInterval(this.#tickInterval);
     }
-
+    
     gameOver(player) {
         this.players[player].piece = null;
         this.players[player].status = 1;
@@ -109,7 +119,7 @@ class Game {
             }
         }
     }
-
+    
     stop() {
         this.initGrids();
         clearInterval(this.#tickInterval);
@@ -120,7 +130,7 @@ class Game {
         }
         this.sendGridsRendering();
     }
-
+    
     tick() {
         console.log("tick", this.gameDuration, this.level);
         for (let player in this.players) {
@@ -143,7 +153,11 @@ class Game {
         }
         this.sendGridsRendering();
     }
-
+    
+    changeNumberOfPlayers(players) {
+        this.players = players;
+        this.nb_players = Object.keys(players).length;
+    }
     sendGridsRendering() {
         let rGrids = {};
         for (let player in this.players) {
@@ -216,20 +230,6 @@ class Game {
                 this.players[player].status;
         }
         return scores;
-    }
-
-    initGrids() {
-        let grids = {};
-        for (let player in this.players) {
-            grids[player] = [];
-            for (let i = 0; i < 21; i++) {
-                grids[player].push([]);
-                for (let j = 0; j < 10; j++) {
-                    grids[player][i].push(["black", "null"]);
-                }
-            }
-        }
-        this.grids = grids;
     }
 
     spawnPiece(player) {

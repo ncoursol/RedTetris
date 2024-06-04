@@ -1,6 +1,6 @@
-const SocketManager = require("../src/SocketManager");
+const RoomManager = require("../src/RoomManager");
 
-var manager = new SocketManager();
+var manager = new RoomManager();
 
 const room1 = "test-room-1";
 const room2 = "test-room-2";
@@ -54,7 +54,7 @@ describe("Room", function () {
 
     describe("remove_room", function () {
         beforeAll(function () {
-            manager = new SocketManager();
+            manager = new RoomManager();
             manager.add_player(player1, "lobby");
             manager.add_room(room1);
             manager.add_room(room2);
@@ -83,7 +83,7 @@ describe("Room", function () {
 
     describe("add_player_to_room", function () {
         beforeAll(function () {
-            manager = new SocketManager();
+            manager = new RoomManager();
             manager.add_player(player1, "lobby");
             manager.add_player(player2, "lobby");
             manager.add_room(room1);
@@ -112,7 +112,7 @@ describe("Room", function () {
 
     describe("remove_player_from_room", function () {
         beforeAll(function () {
-            manager = new SocketManager();
+            manager = new RoomManager();
             manager.add_player(player1, "lobby");
             manager.add_player(player2, "lobby");
             manager.add_room(room1);
@@ -147,7 +147,7 @@ describe("Room", function () {
 
     describe("get_state", function () {
         beforeAll(function () {
-            manager = new SocketManager();
+            manager = new RoomManager();
             manager.add_player(player1, "lobby");
             manager.add_player(player2, "lobby");
             manager.add_room(room1);
@@ -178,7 +178,7 @@ describe("Room", function () {
 
     describe("get_info", function () {
         beforeAll(function () {
-            manager = new SocketManager();
+            manager = new RoomManager();
             manager.add_player(player1, "lobby");
             manager.add_player(player2, "lobby");
             manager.add_room(room1);
@@ -212,7 +212,7 @@ describe("Room", function () {
             expect(roomName).toEqual(room1);
         });
         it("should return null if there are no room", function () {
-            manager = new SocketManager();
+            manager = new RoomManager();
             const roomInfo = manager.get_rooms_info(room1);
             expect(roomInfo).toBeNull();
         });
@@ -220,7 +220,7 @@ describe("Room", function () {
 
     describe("get_player_room", function () {
         beforeAll(function () {
-            manager = new SocketManager();
+            manager = new RoomManager();
             manager.add_player(player1, "lobby");
             manager.add_player(player2, "lobby");
             manager.add_room(room1);

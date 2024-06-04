@@ -4,7 +4,7 @@ const cors = require("cors");
 const { Server } = require("socket.io");
 const app = express();
 const path = require("path");
-const SocketManager = require("./src/SocketManager");
+const RoomManager = require("./src/RoomManager");
 
 const LOBBY_ROOM = "lobby";
 
@@ -19,10 +19,8 @@ const io = new Server(server, {
     },
 });
 
-const manager = new SocketManager();
+const manager = new RoomManager();
 //manager.verbose = true;
-
-const sessionStorage = new Map();
 
 io.on("connection", (socket) => {
     manager.add_player(socket.id, LOBBY_ROOM);

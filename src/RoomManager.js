@@ -1,7 +1,7 @@
 const Player = require("./Player");
 const Game = require("./Game");
 
-class SocketManager {
+class RoomManager {
     constructor() {
         this.active_rooms = {};
         this.players = {};
@@ -93,4 +93,4 @@ class SocketManager {
     }
 }
 
-module.exports = SocketManager;
+module.exports = RoomManager;
