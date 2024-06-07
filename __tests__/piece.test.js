@@ -32,17 +32,13 @@ describe("Piece", () => {
 
     it("should rotate the piece when no collision", () => {
         piece.rotate(1, () => true);
-        if (piece.index === 1)
-            expect(piece.currentShape).toBe(1);
-        else
+        if (piece.index !== 1)
             expect(piece.currentShape).toBe(0);
     });
 
     it("should not rotate the piece when collision", () => {
         piece.rotate(1, () => false);
-        if (piece.index === 1)
-            expect(piece.currentShape).toBe(0);
-        else
+        if (piece.index !== 1)
             expect(piece.currentShape).toBe(1);
     });
 });

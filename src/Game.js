@@ -37,13 +37,14 @@ class Game {
     init(io, roomName) {
         this.#io = io;
         this.#roomName = roomName;
+        this.#frameCounter = 0;
+        this.#tickInterval = null;
         this.gameDuration = 0;
         this.level = 0;
-        this.#frameCounter = 0;
         this.isOver = false;
-        this.#tickInterval = null;
         this.isRunning = false;
         this.isOver = false;
+        this.pieceStack = [];
         for (let player in this.players) {
             this.players[player].piece = null;
             this.players[player].stackPos = 0;
@@ -158,6 +159,7 @@ class Game {
         this.players = players;
         this.nb_players = Object.keys(players).length;
     }
+    
     sendGridsRendering() {
         let rGrids = {};
         for (let player in this.players) {
