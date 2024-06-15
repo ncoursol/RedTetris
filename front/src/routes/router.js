@@ -8,7 +8,7 @@ const routes = [
         children: [
             { path: "", component: () => import("../pages/HomePage.vue") },
             {
-                path: ":room[:player_name]",
+                path: ":room/:player_name",
                 component: () => import("../pages/GamePage.vue"),
                 props: true,
                 beforeEnter: (to, from, next) => {

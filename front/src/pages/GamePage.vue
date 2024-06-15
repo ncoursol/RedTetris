@@ -3,71 +3,46 @@
         <div class="grid-ctn">
             <div :class="{ menuSmall: showMenu }" style="max-width: 30%">
                 <div class="buttons-list" :class="{ 'Button :deep(actionBtn)': showMenu }">
-                    <div class="overlayBtn" @click="showMenu = !showMenu" :style="{ transform: `rotate(${showMenu ? 0 : 180}deg)` }">
+                    <div class="overlayBtn" @click="showMenu = !showMenu" :style="{
+                transform: `rotate(${showMenu ? 0 : 180}deg)`,
+            }">
                         >
                     </div>
-                    <p
-                        class="room_title overflowHandler"
-                        :class="{ hidden: showMenu }"
-                    >
+                    <p class="room_title overflowHandler" :class="{ hidden: showMenu }">
                         {{ room }}
                     </p>
-                    <div
-                        v-if="isCurrentMaster"
-                        class="buttons-master"
-                    >
-                        <Button
-                            buttonText="Start Game"
-                            actionType="start"
-                            @action="setState"
-                        />
-                        <Button
-                            buttonText="Stop Game"
-                            actionType="stop"
-                            @action="setState"
-                        />
-                        <Button
-                            buttonText="Pause game"
-                            actionType="pause"
-                            @action="setState"
-                        />
+                    <div v-if="isCurrentMaster" class="buttons-master">
+                        <Button buttonText="Start Game" actionType="start" @action="setState" />
+                        <Button buttonText="Stop Game" actionType="stop" @action="setState" />
+                        <Button buttonText="Pause game" actionType="pause" @action="setState" />
                     </div>
-                    <Button
-                        buttonText="Leave Room"
-                        @action="handleBeforeUnload"
-                    />
+                    <Button buttonText="Leave Room" @action="handleBeforeUnload" />
                 </div>
                 <div class="player-list" :class="{ hidden: showMenu }">
-                    <div
-                        v-for="(player, index) in roomsInfo.players"
-                        :key="index"
-                        class="player"
-                    >
-                        <p class="overflowHandler">{{ player.username }}</p>
+                    <div v-for="(score, player) in scoreGrid" :key="player" :class="player === player_name ? 'current-player' : ''">
+                        <div style="display: flex">
+                            <p class="overflowHandler" style="width: 100%">
+                                {{ player }}
+                            </p>
+                            <div style="margin: 3px">{{ score.score }}</div>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="myGrid">
                 <div class="col">
-                    <PlayerLabel
-                        :player_name="player_name"
-                        class="overflowhandler"
-                    />
+                    <PlayerLabel :player_name="player_name" class="overflowhandler" />
                     <div class="grid">
-                        <TetrisGrid :grid="myGrid" />
+                        <TetrisGrid :grid="myGrid" :status="myGridStatus" />
                     </div>
                 </div>
             </div>
             <div class="opponentsGrid" ref="opponentsArea">
-                <div
-                    v-for="(player_grid, index) in opponentsGrids"
-                    :key="index"
-                    class="opponentsGrid-ctn"
-                >
+                <div v-for="(player_grid, index) in opponentsGrids" :key="index" class="opponentsGrid-ctn">
                     <div class="col">
                         <PlayerLabel :player_name="index" />
                         <div class="grid">
-                            <TetrisGrid :grid="player_grid" />
+                            <TetrisGrid :grid="player_grid" :opponentGrid="true" :status="scoreGrid[index].status" />
                         </div>
                     </div>
                 </div>
@@ -77,16 +52,17 @@
 </template>
 
 <style scoped>
-.player-game {
-    display: flex;
-    flex-direction: column;
+
+.current-player {
+    background-color: black;
+    color: white;
 }
 
 .player-list {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    margin-left: 20px;
+    gap: 5px;
+    border: 1px solid black;
 }
 
 .menuSmall {
@@ -120,6 +96,7 @@
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+    margin: 3px;
 }
 
 .overlayBtn {
@@ -173,6 +150,7 @@
     justify-content: center;
     gap: 10px;
     margin: 10px;
+    padding-bottom: 14px;
 }
 
 .myGrid {
@@ -186,9 +164,6 @@
     display: flex;
     flex-direction: column;
     width: 100%;
-    background-color: #c7c7c7;
-    border-radius: 10px;
-    border: 2px black solid;
     position: absolute;
     top: 0;
     right: 0;
@@ -200,7 +175,7 @@
     display: flex;
     position: relative;
     flex: 1;
-    margin-bottom: 22px;
+    justify-content: center;
 }
 
 .opponentsGrid-ctn {
@@ -241,32 +216,34 @@ export default defineComponent({
         const opponents = ref([]);
 
         const opponentsGrids = ref([]);
+
         const myGrid = ref([]);
+        const myGridStatus = ref([]);
 
         const opponentsArea = ref(null);
         const width = ref(0);
         const height = ref(0);
 
         const showMenu = ref(false);
+        const scoreGrid = ref([]);
 
         const computeRowsAndColumns = () => {
             const numberOfRow = Math.ceil(
                 (height.value / (width.value * 2)) *
-                    Math.sqrt(opponents.value.length)
+                Math.sqrt(opponents.value.length)
             );
             const numberOfColumns = Math.ceil(
                 opponents.value.length / numberOfRow
             );
 
-            const opponentContainer =
-                document.querySelector(".opponentsGrid");
+            const opponentContainer = document.querySelector(".opponentsGrid");
             opponentContainer.style.gridTemplateColumns = `repeat(${numberOfColumns}, 1fr)`;
             opponentContainer.style.gridTemplateRows = `repeat(${numberOfRow}, 1fr)`;
         };
 
         const handleRoomsInfo = (rooms) => {
             roomsInfo.value = rooms;
-            //console.log(roomsInfo.value);
+            //console.log('INFO', roomsInfo.value);
 
             isCurrentMaster.value =
                 rooms.players[Object.keys(rooms.players)[0]].playerId ===
@@ -278,27 +255,33 @@ export default defineComponent({
 
             computeRowsAndColumns();
 
-            if (rooms.state !== "playing") {
+            if (rooms.state === "stop") {
+                Object.keys(roomsInfo.value.players).forEach((player) => {
+                    scoreGrid.value[roomsInfo.value.players[player].username] = {
+                        score: 0,
+                        status: 0,
+                    };
+                });
+                myGrid.value = new Array(21).fill(new Array(10).fill(["black", "null"]));
                 opponentsGrids.value = {};
                 for (let i = 0; i < opponents.value.length; i++) {
-                    opponentsGrids.value[opponents.value[i].username] = [];
+                    opponentsGrids.value[opponents.value[i].username] = new Array(21).fill(new Array(10).fill(['black', 'null']));
                 }
             }
         };
 
         const handleGridsInfo = (grids) => {
-            const myIndex = Object.keys(roomsInfo.value.players).findIndex(
-                (player) => player === socket.id
-            );
+            myGrid.value = grids[props.player_name];
+            delete grids[props.player_name];
 
-            myGrid.value = grids[myIndex];
-            delete grids[myIndex];
-            
             opponentsGrids.value = grids;
-            console.log(myGrid.value);
         };
 
         const handleKeyDown = (e) => {
+            if (e.repeat) {
+                return;
+            }
+
             if (e.key === "ArrowDown") {
                 socket.emit("move", props.room, "down");
             } else if (e.key === "ArrowLeft") {
@@ -318,25 +301,34 @@ export default defineComponent({
         };
 
         const setState = (actionType) => {
+            if (roomsInfo.value.state === actionType) {
+                return;
+            }
             socket.emit("room-state", props.room, actionType);
         };
 
         onMounted(() => {
             socket.on("rooms-info", handleRoomsInfo);
             socket.on("grids", handleGridsInfo);
+            socket.on("scores", (score) => {
+                scoreGrid.value = score;
+                myGridStatus.value = score[props.player_name].status;
+            });
             socket.emit("get-rooms", props.room);
-
             window.addEventListener("keydown", handleKeyDown);
+            window.addEventListener('beforeunload', handleBeforeUnload);
 
-            width.value = opponentsArea.value.offsetWidth;
+            width.value = opponentsArea.value.oopponentsAreaffsetWidth;
             height.value = opponentsArea.value.offsetHeight;
         });
 
         onUnmounted(() => {
             socket.off("rooms-info", handleRoomsInfo);
             socket.off("grids", handleGridsInfo);
+            socket.off("scores");
             handleBeforeUnload();
             window.removeEventListener("keydown", handleKeyDown);
+            window.removeEventListener('beforeunload', handleBeforeUnload);
         });
 
         onresize = () => {
@@ -352,8 +344,10 @@ export default defineComponent({
             isCurrentMaster,
             opponentsGrids,
             myGrid,
+            myGridStatus,
             opponentsArea,
             showMenu,
+            scoreGrid,
         };
     },
 });

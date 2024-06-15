@@ -8,8 +8,13 @@
 .player-label {
     display: flex;
     font-family: 'Druk';
-    margin: 5px;
-    margin-left: 10px;
+    margin-bottom: 5px;
+    justify-content: center;
+    border: 2px solid black;
+    border-radius: 5px;
+    padding-left: 5px;
+    padding-right: 5px;
+    background-color: #919191;
 }
 
 .overflowHandler {

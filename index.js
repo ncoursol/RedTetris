@@ -4,7 +4,7 @@ const cors = require("cors");
 const { Server } = require("socket.io");
 const app = express();
 const path = require("path");
-const SocketManager = require("./src/SocketManager");
+const RoomManager = require("./src/RoomManager");
 
 const LOBBY_ROOM = "lobby";
 
@@ -19,32 +19,12 @@ const io = new Server(server, {
     },
 });
 
-const manager = new SocketManager();
+const manager = new RoomManager();
 //manager.verbose = true;
-
-const sessionStorage = new Map();
-
-io.use((socket, next) => {
-    const sessionId = socket.handshake.auth.sessionID;
-    if (sessionId) {
-        const sessionData = sessionStorage.get(sessionId);
-        if (sessionData) {
-            socket.id = sessionData;
-            return next();
-        }
-    }
-    socket.handshake.auth.sessionID = socket.id;
-    sessionStorage.set(socket.id, socket.id);
-    next();
-});
 
 io.on("connection", (socket) => {
     manager.add_player(socket.id, LOBBY_ROOM);
     socket.join(LOBBY_ROOM);
-
-    socket.emit("session", {
-        sessionID: socket.handshake.auth.sessionID,
-    });
 
     socket.on("leave-room", () => {
         roomName = manager.get_player_room(socket.id);
@@ -61,6 +41,8 @@ io.on("connection", (socket) => {
     socket.on("join-room", (roomName, username, type, callback) => {
         if (roomName == "") {
             callback("Room name cannot be empty");
+        } else if (manager.get_player_room_by_username(username) == roomName) {
+            callback("Username already in use");
         } else if (roomName == LOBBY_ROOM) {
             callback("Unauthorized room name");
         } else if (type == "create" && manager.active_rooms[roomName]) {
@@ -98,9 +80,12 @@ io.on("connection", (socket) => {
         ) {
             return;
         }
-        // call piece move function/object here
-        grid = [];
-        io.to(roomName).emit("grids", grid, socket.id);
+        if (
+            !manager.active_rooms[roomName] ||
+            manager.get_player_room(socket.id) != roomName
+        )
+            return;
+        manager.active_rooms[roomName].game.keyboardMove(move, socket.id);
     });
 
     socket.on("room-state", (roomName, roomState) => {
@@ -110,13 +95,16 @@ io.on("connection", (socket) => {
             manager.active_rooms[roomName].state == roomState
         )
             return;
+        let tmp = manager.active_rooms[roomName].state;
         manager.set_room_state(roomName, roomState);
         if (roomState == "stop" || roomState == "start") {
             socket.to(LOBBY_ROOM).emit("rooms-info", manager.get_rooms_info());
         }
         io.to(roomName).emit("rooms-info", manager.get_rooms_info(roomName));
         if (roomState == "start") {
-            manager.active_rooms[roomName].game.start(io, roomName);
+            if (tmp == "stop")
+                manager.active_rooms[roomName].game.init(io, roomName);
+            else manager.active_rooms[roomName].game.start();
         } else if (roomState == "stop") {
             manager.active_rooms[roomName].game.stop();
         } else if (roomState == "pause") {
