@@ -26,16 +26,11 @@ indicates the first line occupied by a piece without providing any details about
 of the following lines. As soon as the terrain is updated, all opponents must visualize the
 evolution of their spectrum.
 
-The last player of the gmae is the winner.
+The last player of the game is the winner.
 The game can be played in solo.
 
 ### Moving the pieces
 
-
-### Montage
-The EEGs were recorded from 64 electrodes as per the international 10-10 system (excluding electrodes Nz, F9, F10, FT9, FT10, A1, A2, TP9, TP10, P9, and P10).
-
-![EEG montage picture](pictures/montage.png)
 
 ## Run program
 The program is write and run using python3.
@@ -47,53 +42,6 @@ The program is write and run using python3.
 Install all the requirements:
 
 `pip install -r requirements.txt`
-
-### Use case
-
-```
-➜  tpv git:(master) ✗ python3 tpv.py -h               
-usage: PROG [-h] [-p] [-s [SUBJECTS ...]] [-r [RUNS ...] | -t [TASKS ...]] [-v [VERBOSE ...]]
-
-Total Perspective Vortex
-
-options:
-  -h, --help            show this help message and exit
-  -p, --predict         Perform prediction mode
-  -s [SUBJECTS ...], --subjects [SUBJECTS ...]
-                        List of subjects to train
-  -r [RUNS ...], --runs [RUNS ...]
-                        List of runs to train
-  -t [TASKS ...], --tasks [TASKS ...]
-                        List of tasks to train where:
-                        0 : Motor execution: left vs right hand - [3, 7, 11]
-                        1 : Motor imagery: left vs right hand - [4, 8, 12]
-                        2 : Motor execution: hands vs feet - [5, 9, 13]
-                        3 : Motor imagery: hands vs feet - [6, 10, 14]
-                        4 : Motor execution/imagery: left vs right hand - [3, 7, 11, 4, 8, 12]
-                        5 : Motor execution/imagery: hands vs feet - [5, 9, 13, 6, 10, 14]
-  -v [VERBOSE ...], --verbose [VERBOSE ...]
-                        Display graphs where:
-                        montage : electrodes montage
-                        filter : filter graph before/after
-                        graph : data, before and after filering
-                        mne : display all mne function log
-```
-
-Run training on the entire dataset:
-
-`python3 tpv.v`
-
-Run prediction on the entire dataset:
-
-`python3 tpv.v -p`
-
-Run training for the subject nb 42 on the runs nb 6, 7, 8, 9 ([see runs](README.md#experimental-protocol)).
-
-`python3 tpv.py -s 42 -r 6 7 8 9`
-
-Run training for the subjects nb 1, 2, 3, 4, 5 on the motor execution: left vs right hand (task 1)
-
-`python3 tpv.py -s 1 2 3 4 5 -t 1`
 
 ### Screenshots
 
