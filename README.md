@@ -54,7 +54,7 @@ If you want to deploy it on a local network, for example, you have to replace 'l
 Main Lobby page:
 
 ![HomePage](pics/lobby.png)
-![JoinGame](pics/join.png)
+![JoinGame](pics/Join.png)
 
 Game page:
 
