@@ -30,27 +30,33 @@ The last player of the game is the winner.
 The game can be played in solo.
 
 ### Moving the pieces
+Moving the different tetrominoes uses the standard Tetris controls:
+  - 'LEFT'/'RIGHT' to move the piece laterally.
+  - 'UP' to rotate the current piece clockwise.
+  - 'DOWN' to move the piece down one row on the grid.
+  - 'SPACE' to instantly place the piece at its highlighted position at the bottom of the grid.
 
+This Tetris game uses '[The Super Rotation System](https://tetris.fandom.com/wiki/SRS)'', also known as 'SRS' and 'Standard Rotation System' with corresponding Wall kicks techniques.
 
 ## Run program
-The program is write and run using python3.
+The program run using pnpm:
+`pnpm install`
+`pnpm build`
+`pnpm back`
 
-`sudo apt update`
+After that, you can go at 'localhost:3000'.
+By default, you can 'create' a new user by simply opening a new tab at localhost.
 
-`apt install python3-pip`
+If you want to deploy it on a local network, for example, you have to replace 'localhost' with your current local IP address.
 
-Install all the requirements:
+## Screenshots
 
-`pip install -r requirements.txt`
+Main Lobby page:
 
-### Screenshots
+![HomePage](pics/lobby.png)
+![JoinGame](pics/join.png)
 
-Filtering by frequencies (low: 7Hz, high: 30Hz):
+Game page:
 
-![Before filtering](pictures/signal_before.png)
-
-![After filtering](pictures/signal_after.png)
-
-Result on records before/after filtering:
-
-![Graphs records](pictures/graph.png)
+![GamePage](pics/game.png)
+![GamePage2](pics/game2.png)
